@@ -8,7 +8,7 @@ Espelho em texto do quadro mantido no TickTick (projeto `CaixaDiario`), que é a
 
 | Coluna | Cartões | Números |
 |---|---|---|
-| Backlog/Ideias | 9 | 34 a 42 |
+| Backlog/Ideias | 10 | 34 a 43 |
 | A Fazer | 29 | 05 a 33 |
 | Em Andamento | 1 | 04 |
 | Em Revisão | 0 |  |
@@ -120,6 +120,15 @@ CRITÉRIO: escore de mutação medido e registrado, com limite no CI.
 POR QUE NÃO AGORA: conduta provisória expõe só o saldo do dia.  
 GATILHO: resposta da QA-01 indicando acumulado.  
 CRITÉRIO: campo saldoAcumulado no consolidado, com teste de reconciliação entre dias.
+
+### 43. Publicar batimento periódico do despachante
+
+**Bloco:** Backlog · **Prioridade:** baixa · **Etiquetas:** condicional, observabilidade
+
+ÂNCORA: lacuna L-05 (o Consolidado não distingue "sem lançamentos" de "outbox parada").  
+POR QUE NÃO AGORA: não muda o RNF-01; a marca `defasado` já cobre broker fora do lado do consumidor.  
+GATILHO: requisito de detectar defasagem com o broker fora.  
+CRITÉRIO: evento de batimento a cada N segundos; Consolidado marca `defasado` quando o batimento atrasa.
 
 ---
 
@@ -552,10 +561,10 @@ CRITÉRIO: em pasta temporária, git clone do repositório público e execução
 RISCO: arquivo que só existe na pasta local passa despercebido.  
 TETO: 7 min (Bloco 5).
 
-- [ ] 32.1 Clonar em pasta temporária
-- [ ] 32.2 Seguir só o README até o saldo conferido
-- [ ] 32.3 Corrigir o README se algum passo exigiu conhecimento externo
-- [ ] 32.4 Push final e conferência de origin/main
+- [x] 32.1 Clonar em pasta temporária
+- [x] 32.2 Seguir só o README até o saldo conferido
+- [x] 32.3 Corrigir o README se algum passo exigiu conhecimento externo
+- [x] 32.4 Push final e conferência de origin/main
 
 ### 33. Revisar os nove requisitos obrigatórios contra o repositório publicado
 

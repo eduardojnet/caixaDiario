@@ -122,10 +122,11 @@ Se `quantidade` vier menor que 2, repita depois de um segundo: a projeção é a
 ```bash
 curl -s -i -X POST localhost:8080/v1/caixas/loja-centro/lancamentos \
   -H 'Content-Type: application/json' -H 'Idempotency-Key: venda-001' \
-  -d "{\"tipo\":\"CREDITO\",\"valor\":150.75,\"dataDoFato\":\"$HOJE\",\"descricao\":\"venda balcao\"}" | head -5
+  -d "{\"tipo\":\"CREDITO\",\"valor\":150.75,\"dataDoFato\":\"$HOJE\",\"descricao\":\"venda balcao\"}" \
+  | grep -iE '^HTTP|^Idempotency-Replayed|"id"'
 ```
 
-Resultado esperado: `HTTP/1.1 200 OK` e `Idempotency-Replayed: true`, com o mesmo `id` do primeiro envio. A mesma chave com outro corpo responde `422`. O saldo não muda.
+Resultado esperado: `HTTP/1.1 200 OK`, `Idempotency-Replayed: true` e o corpo com o mesmo `id` do primeiro envio. A mesma chave com outro corpo responde `422`. O saldo não muda.
 
 **7. Listar os lançamentos do dia.**
 

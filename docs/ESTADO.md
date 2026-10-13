@@ -2,7 +2,7 @@
 
 **Documento vivo.** Atualizado ao fim de cada bloco de trabalho. Descreve o que existe, o que falta e o que está decidido, sem otimismo.
 
-**Última atualização:** 2026-10-12 (Bloco 4 concluído)
+**Última atualização:** 2026-10-12 (Bloco 5 concluído)
 **Build:** `dotnet build CaixaDiario.sln`: 0 avisos, 0 erros (`TreatWarningsAsErrors`, `AnalysisMode=Recommended`)
 **Testes:** 46 passando, 0 falhas (domínio 20, arquitetura 4, integração 22 com PostgreSQL e RabbitMQ reais via Testcontainers); carga k6 a 50 req/s com 0,00% de falha
 
@@ -32,9 +32,9 @@
 | O4 | Justificativa de ferramentas, tecnologias e tipo de arquitetura | Atendido: `docs/adr/ADR-0001`, `docs/adr/ADR-0002`, aceitos no G2 |
 | O5 | Linguagem dominada | Atendido: C# / .NET 10 (SDK 10.0.401) |
 | O6 | Testes | Atendido: `tests/` (46 testes verdes) e `tests/carga/consolidado-50rps.js` (executado) |
-| O7 | README: como funciona e como rodar localmente | Pendente (Bloco 5) |
+| O7 | README: como funciona e como rodar localmente | Atendido: `README.md`, seções "Como a aplicação funciona" e "Como rodar localmente", verificado por clone limpo |
 | O8 | Repositório público no GitHub | Publicado: https://github.com/eduardojnet/caixaDiario, push a cada bloco desde o G2 |
-| O9 | Toda documentação no repositório | Em andamento: Blocos 1 a 4 em `docs/`; README no Bloco 5 |
+| O9 | Toda documentação no repositório | Atendido: `README.md` e `docs/` |
 
 > O enunciado descarta o teste se algum requisito obrigatório não for minimamente atendido. Nenhum item desta tabela pode terminar como "Pendente".
 
@@ -75,7 +75,7 @@
 
 | ID | Questão | Conduta provisória | Origem |
 |---|---|---|---|
-| L-01 | Números do PacioliBank no texto de citação divergiam do repositório (95% e 87% declarados; 94,11% e 86,96% medidos) | Texto corrigido no CLAUDE.md §5.3; reconferir no Bloco 5 | Verificação de 2026-10-12 |
+| L-01 | Números do PacioliBank no texto de citação divergiam do repositório (95% e 87% declarados; 94,11% e 86,96% medidos) | Resolvida: reconferidos no README publicado no GitHub em 2026-10-12 (237 testes, 94,11%, 86,96%, estado de 2026-10-06). A cópia local do PacioliBank está atrás do remoto (230, 95,41%, 87,06%); vale o publicado, que é o que o avaliador abre | Verificação de 2026-10-12 |
 | L-02 | Plano original não tinha ADR de tecnologia (requisito O4) | ADR-0002 incluído no Bloco 2 | Verificação de 2026-10-12 |
 | QA-01 a QA-05 | Questões de negócio do enunciado | Condutas provisórias em `docs/03-requisitos.md` §7 | Bloco 1 |
 | PR-01 a PR-04 | Premissas com impacto declarado | `docs/03-requisitos.md` §5 | Bloco 1 |
@@ -94,9 +94,9 @@
 | 2. Decisões | 40 | 21:04 | 21:06 | 2 | Concluído | Frase volume x isolamento no ADR-0001; G2 aprovado |
 | 3. Arquitetura Alvo | 35 | 21:07 | 21:11 | 4 | Concluído | C2 renderiza; sobrevivência de Lancamentos visível |
 | 4. Código e testes | 80 | 21:12 | 21:31 | 19 | Concluído | Compose sobe; POST 201; saldo confere; testes passam; POST 201 com Consolidado parado |
-| 5. README e fechamento | 40 | 21:32 | | | Em andamento | Clone limpo sobe só com o README |
+| 5. README e fechamento | 40 | 21:32 | 21:35 | 3 | Concluído | Clone limpo sobe só com o README |
 | Reserva | 30 | | | | Disponível | Consumida apenas pelo Bloco 4 ou por revisão final |
-| **Total** | **300** | | | **30** | | |
+| **Total** | **300** | | | **33** | | |
 
 ---
 
@@ -144,3 +144,6 @@
 | 2026-10-12 | 2026-10-12 21:34 cartão 29 concluído: README §Como a aplicação funciona: resumo sem tecnologia em 5 linhas, o que muda para quem confere o caixa, dois serviços e frase volume x isolamento, fluxo em 4 passos, links para C2, sequência e ADRs |
 | 2026-10-12 | 2026-10-12 21:34 cartão 30 concluído: README §Como rodar localmente: pré-requisitos com versão, 7 passos com resultado esperado, RNF-01 em três comandos, recusas, Se algo der errado, Parar e começar do zero, testes e carga |
 | 2026-10-12 | 2026-10-12 21:34 cartão 31 concluído: README com índice, Estado atual coerente com ESTADO §4/§5, citação com números reconferidos no GitHub em 2026-10-12 (237 testes, 94,11%, 86,96%, estado de 2026-10-06), O que faria com mais tempo, LICENSE MIT |
+| 2026-10-12 | 2026-10-12 21:35 cartão 32 concluído: clone limpo de github.com/eduardojnet/caixaDiario em pasta temporária: passos 1 a 7 e RNF-01 do README reproduzidos (ready 200/200, saldo 100,50, 201 com Consolidado parado, saldo 120,50); dotnet test no clone: 46/0; passo 6 corrigido (head -5 escondia Idempotency-Replayed) |
+| 2026-10-12 | Bloco 5: clone limpo revelou passo 6 do README sem o resultado prometido (`head -5` cortava o cabeçalho `Idempotency-Replayed`); trocado por `grep` dos cabeçalhos e do id |
+| 2026-10-12 | Bloco 5: item extra em "O que faria com mais tempo" (batimento do despachante, L-05) registrado como cartão 43 no backlog |
