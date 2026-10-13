@@ -10,6 +10,7 @@ public sealed record SaldoDiario(
     decimal TotalCreditos,
     decimal TotalDebitos,
     decimal SaldoDoDia,
+    decimal SaldoAcumulado,
     int Quantidade,
     DateTimeOffset? AtualizadoAte,
     bool Defasado);
@@ -94,6 +95,19 @@ public sealed class RepositorioConsolidado(NpgsqlDataSource dataSource)
             new { caixaId, data = new DataParametro(data.ToDateTime(TimeOnly.MinValue)) },
             cancellationToken: cancellationToken)).ConfigureAwait(false);
 
+        // Saldo acumulado ate a data (cartao 42): soma dos resultados diarios do
+        // caixa ate o dia consultado, calculada na consulta. Lancamento
+        // retroativo (QA-03) altera um dia passado e ja aparece aqui, sem
+        // recalcular dias seguintes. O caixa comeca em zero (QA-06).
+        var acumulado = await conexao.ExecuteScalarAsync<decimal>(new CommandDefinition(
+            """
+            SELECT COALESCE(SUM(total_creditos - total_debitos), 0)
+            FROM saldo_diario
+            WHERE caixa_id = @caixaId AND data <= @data
+            """,
+            new { caixaId, data = new DataParametro(data.ToDateTime(TimeOnly.MinValue)) },
+            cancellationToken: cancellationToken)).ConfigureAwait(false);
+
         // Atraso do ultimo evento aplicado: tempo entre o registro em
         // Lancamentos e a aplicacao aqui. A resposta avisa em vez de falhar.
         var atrasoSegundos = await conexao.ExecuteScalarAsync<double?>(new CommandDefinition(
@@ -103,12 +117,12 @@ public sealed class RepositorioConsolidado(NpgsqlDataSource dataSource)
 
         if (linha is null)
         {
-            return new SaldoDiario(caixaId, data, 0m, 0m, 0m, 0, null, defasado);
+            return new SaldoDiario(caixaId, data, 0m, 0m, 0m, acumulado, 0, null, defasado);
         }
 
         return new SaldoDiario(
             caixaId, data, linha.TotalCreditos, linha.TotalDebitos, linha.TotalCreditos - linha.TotalDebitos,
-            linha.Quantidade, new DateTimeOffset(DateTime.SpecifyKind(linha.AtualizadoAte, DateTimeKind.Utc)), defasado);
+            acumulado, linha.Quantidade, new DateTimeOffset(DateTime.SpecifyKind(linha.AtualizadoAte, DateTimeKind.Utc)), defasado);
     }
 
     private sealed class Linha
