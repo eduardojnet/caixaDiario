@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <RootNamespace>CaixaDiario.Consolidado.Api</RootNamespace>
+    <AssemblyName>CaixaDiario.Consolidado.Api</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.1.89" />
+    <PackageReference Include="Npgsql" Version="10.0.3" />
+    <PackageReference Include="RabbitMQ.Client" Version="7.2.2" />
+  </ItemGroup>
+
+  <!-- Nenhuma referencia de projeto: o Consolidado conhece Lancamentos so pelo
+       contrato do evento (docs/contratos), com tipo proprio. Sem assembly
+       compartilhado (ADR-0002). -->
+
+</Project>
