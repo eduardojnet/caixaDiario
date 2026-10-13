@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>CaixaDiario.Dominio.Tests</RootNamespace>
+    <AssemblyName>CaixaDiario.Dominio.Tests</AssemblyName>
+    <IsTestProject>true</IsTestProject>
+    <!-- xunit v3 na Microsoft Testing Platform: o projeto de teste e um executavel. -->
+    <OutputType>Exe</OutputType>
+    <!-- Nomes de teste em portugues com underscore sao intencionais: leem como frase. -->
+    <NoWarn>$(NoWarn);CA1707</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" Version="4.0.1" />
+    <PackageReference Include="coverlet.MTP" Version="10.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\CaixaDiario.Lancamentos.Dominio\CaixaDiario.Lancamentos.Dominio.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+</Project>
