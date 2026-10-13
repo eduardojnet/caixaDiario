@@ -2,7 +2,7 @@
 
 **Documento vivo.** Atualizado ao fim de cada bloco de trabalho. Descreve o que existe, o que falta e o que está decidido, sem otimismo.
 
-**Última atualização:** 2026-10-12 (Bloco 1 concluído)
+**Última atualização:** 2026-10-12 (Bloco 2 redigido, aguardando G2)
 **Build:** convenções definidas (`Directory.Build.props`, `global.json`); nenhum projeto ainda
 **Testes:** inexistentes
 
@@ -29,7 +29,7 @@
 | O1 | Mapeamento de domínios funcionais e capacidades de negócio | Atendido: `docs/01-capacidades-de-negocio.md`, `docs/02-dominios-funcionais.md` |
 | O2 | Refinamento de requisitos funcionais e não funcionais | Atendido: `docs/03-requisitos.md` (RF-01 a RF-10, RNF-01 a RNF-07, restrições, premissas, drivers, QA-01 a QA-05) |
 | O3 | Desenho da solução completo (Arquitetura Alvo) | Pendente (Bloco 3) |
-| O4 | Justificativa de ferramentas, tecnologias e tipo de arquitetura | Pendente (Bloco 2) |
+| O4 | Justificativa de ferramentas, tecnologias e tipo de arquitetura | Redigido, status Proposto: `docs/adr/ADR-0001`, `docs/adr/ADR-0002`; aguarda G2 |
 | O5 | Linguagem dominada | Previsto: C# / .NET 10 |
 | O6 | Testes | Pendente (Bloco 4) |
 | O7 | README: como funciona e como rodar localmente | Pendente (Bloco 5) |
@@ -44,8 +44,8 @@
 
 | Item | Estado |
 |---|---|
-| ADR-0001 estilo arquitetural | Não redigido |
-| ADR-0002 plataforma, armazenamento e integração | Não redigido |
+| ADR-0001 estilo arquitetural | Redigido, Proposto: dois serviços, isolamento de falha e não volume |
+| ADR-0002 plataforma, armazenamento e integração | Redigido, Proposto: .NET 10, PostgreSQL 17 por serviço, Dapper, outbox + RabbitMQ |
 | G1 pré-voo | Não acionado: as cinco verificações responderam (2026-10-12 19:55) |
 | G2 aprovação dos ADRs e autorização de push | Pendente |
 
@@ -81,7 +81,7 @@
 |---|---|---|---|---|---|---|
 | 0. Pré-voo e repositório | 10 | 19:55 | 19:57 | 2 | Concluído | Ferramentas respondem; remoto configurado |
 | 1. Fronteira e requisitos | 65 | 21:00 | 21:03 | 3 | Concluído | Dois serviços nominais no mapa; RNF-01 e RNF-02 com meta e medição |
-| 2. Decisões | 40 | | | | Pendente | Frase volume x isolamento no ADR-0001; G2 aprovado |
+| 2. Decisões | 40 | 21:04 | | | Aguardando G2 | Frase volume x isolamento no ADR-0001; G2 aprovado |
 | 3. Arquitetura Alvo | 35 | | | | Pendente | C2 renderiza; sobrevivência de Lancamentos visível |
 | 4. Código e testes | 80 | | | | Pendente | Compose sobe; POST 201; saldo confere; testes passam; POST 201 com Consolidado parado |
 | 5. README e fechamento | 40 | | | | Pendente | Clone limpo sobe só com o README |
@@ -106,3 +106,5 @@
 | 2026-10-12 | 2026-10-12 21:02 cartão 10 concluído: docs/03-requisitos.md §3 com RNF-01 a RNF-07, cada um com métrica, meta e medição; RNF-05 marcado [NVI] |
 | 2026-10-12 | 2026-10-12 21:02 cartão 11 concluído: docs/03-requisitos.md §7 com QA-01 a QA-05, conduta provisória e o que muda se respondida; restrições, premissas e drivers em seções próprias |
 | 2026-10-12 | Bloco 1: critério verificado: `docs/02` nomeia Controle de Lançamentos e Consolidado Diário (8 ocorrências); RNF-01 e RNF-02 com métrica, meta e medição em `docs/03` §3; §11 aplicada (01 em N1 sem tecnologia, 02 em N2-N3, 03 separa requisito, restrição, premissa, driver e QA) |
+| 2026-10-12 | 2026-10-12 21:04 cartão 12 concluído: ADR-0001 com critérios datados 2026-10-12 antes das opções, conta 50 x 86.400 ≈ 4,3 milhões, frase literal 'O volume não justifica a separação; o isolamento de falha justifica' (linha encontrada por grep), comparação com o PacioliBank, consequências negativas e gatilho |
+| 2026-10-12 | 2026-10-12 21:04 cartão 13 concluído: ADR-0002 com cinco temas, cada um com alternativa rejeitada e gatilho; transporte A/B/C decidido pelo critério 1; docs/adr/README.md com índice |

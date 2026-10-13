@@ -252,12 +252,12 @@ CRITÉRIO: ADR em MADR com critérios datados antes das opções; contém litera
 RISCO: sem a frase, a separação em dois serviços parece superdimensionamento.  
 TETO: 20 min (Bloco 2).
 
-- [ ] 12.1 Fixar e datar os critérios de decisão
-- [ ] 12.2 Comparar monolito modular, dois serviços e serverless
-- [ ] 12.3 Explicitar a conta: 50 req/s, cerca de 4,3 milhões por dia de pico
-- [ ] 12.4 Escrever a frase volume contra isolamento
-- [ ] 12.5 Explicar a diferença em relação ao ADR-0001 do PacioliBank
-- [ ] 12.6 Consequências negativas e gatilho de revisão
+- [x] 12.1 Fixar e datar os critérios de decisão
+- [x] 12.2 Comparar monolito modular, dois serviços e serverless
+- [x] 12.3 Explicitar a conta: 50 req/s, cerca de 4,3 milhões por dia de pico
+- [x] 12.4 Escrever a frase volume contra isolamento
+- [x] 12.5 Explicar a diferença em relação ao ADR-0001 do PacioliBank
+- [x] 12.6 Consequências negativas e gatilho de revisão
 
 ### 13. Redigir o ADR-0002 de plataforma, armazenamento e integração
 
@@ -269,12 +269,12 @@ CRITÉRIO: cada tecnologia com alternativa rejeitada e gatilho; transporte decid
 RISCO: sem ele, o requisito O4 fica atendido pela metade.  
 TETO: 15 min (Bloco 2).
 
-- [ ] 13.1 .NET 10 LTS e motivo
-- [ ] 13.2 PostgreSQL 17, um banco por serviço
-- [ ] 13.3 Dapper no lugar de ORM
-- [ ] 13.4 Transporte: outbox + broker contra feed HTTP contra banco compartilhado
-- [ ] 13.5 Testcontainers e k6
-- [ ] 13.6 Índice docs/adr/README.md
+- [x] 13.1 .NET 10 LTS e motivo
+- [x] 13.2 PostgreSQL 17, um banco por serviço
+- [x] 13.3 Dapper no lugar de ORM
+- [x] 13.4 Transporte: outbox + broker contra feed HTTP contra banco compartilhado
+- [x] 13.5 Testcontainers e k6
+- [x] 13.6 Índice docs/adr/README.md
 
 ### 14. Obter a aprovação do portão G2 e publicar o primeiro push
 
@@ -287,9 +287,9 @@ RISCO: push antes da aprovação publica decisão que Eduardo pode reverter.
 COLUNA: vai para Bloqueado enquanto aguarda a resposta, com o bloqueio nomeado.  
 TETO: 5 min (Bloco 2).
 
-- [ ] 14.1 Apresentar a decisão de cada ADR em uma linha e o trade-off
+- [x] 14.1 Apresentar a decisão de cada ADR em uma linha e o trade-off
 - [ ] 14.2 Registrar a aprovação no ESTADO §3
-- [ ] 14.3 Conferir ausência da marca da empresa avaliadora nos arquivos
+- [x] 14.3 Conferir ausência da marca da empresa avaliadora nos arquivos
 - [ ] 14.4 git push origin main
 
 ### 15. Desenhar o C4 nível 1 de contexto

@@ -1,0 +1,21 @@
+# Registros de Decisão Arquitetural (ADR)
+
+Decisões arquiteturais do CaixaDiario, em formato [MADR](https://adr.github.io/madr/), em português. Cada decisão é um arquivo. Decisão superada não é editada: cria-se um novo ADR que a substitui, e o anterior passa a `Superado por ADR-NNNN`.
+
+## Como ler
+
+Comece pelo [ADR-0001](ADR-0001-estilo-arquitetural.md); o ADR-0002 depende dele.
+
+| ADR | Decisão | Status | Dirigido por |
+|---|---|---|---|
+| [0001](ADR-0001-estilo-arquitetural.md) | Dois serviços com integração assíncrona, justificados por isolamento de falha, não por volume | Proposto | RNF-01, RNF-02, RE-01 |
+| [0002](ADR-0002-plataforma-armazenamento-e-integracao.md) | .NET 10 LTS, PostgreSQL 17 por serviço, Dapper, outbox com RabbitMQ, Testcontainers, NetArchTest, k6 | Proposto | RNF-01, RNF-06, RNF-07, RE-04 |
+
+## Regras deste diretório
+
+1. **Critérios antes das opções.** Os critérios são fixados e datados antes da comparação.
+2. **Consequência negativa obrigatória.** ADR sem consequência negativa não registra um trade-off.
+3. **Alternativa rejeitada com gatilho.** Toda opção descartada registra a condição que a tornaria a melhor escolha.
+4. **Toda decisão rastreia a um requisito** de [03-requisitos.md](../03-requisitos.md).
+
+Template em [template.md](template.md).
