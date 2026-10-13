@@ -1,10 +1,15 @@
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Net.Sockets;
 using CaixaDiario.Consolidado.Api;
 using CaixaDiario.Lancamentos.Api;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace CaixaDiario.Integracao.Tests.Infra;
 
@@ -27,6 +32,14 @@ public sealed class FabricaLancamentos(string conexao, Broker broker) : WebAppli
         builder.UseSetting("Broker:Senha", broker.Senha);
         builder.UseSetting("Despacho:Intervalo", "00:00:00.200");
         builder.UseSetting("Despacho:EsperaMaxima", "00:00:01");
+        AutenticacaoDeTeste.Configurar(builder);
+    }
+
+    /// <summary>Cliente com token de todos os escopos; os testes de recusa o removem.</summary>
+    protected override void ConfigureClient(HttpClient client)
+    {
+        base.ConfigureClient(client);
+        AutenticacaoDeTeste.Autorizar(client, TokensDeTeste.TodosOsEscopos);
     }
 }
 
@@ -42,7 +55,37 @@ public sealed class FabricaConsolidado(string conexao, Broker broker) : WebAppli
         builder.UseSetting("Broker:Usuario", broker.Usuario);
         builder.UseSetting("Broker:Senha", broker.Senha);
         builder.UseSetting("Consulta:DuracaoDoCache", "00:00:00.050");
+        AutenticacaoDeTeste.Configurar(builder);
     }
+
+    protected override void ConfigureClient(HttpClient client)
+    {
+        base.ConfigureClient(client);
+        AutenticacaoDeTeste.Autorizar(client, TokensDeTeste.TodosOsEscopos);
+    }
+}
+
+/// <summary>
+/// Troca o servidor de autorizacao pela chave de teste: mesmas regras de
+/// validacao, sem buscar metadados na rede.
+/// </summary>
+public static class AutenticacaoDeTeste
+{
+    public static void Configurar(IWebHostBuilder builder)
+    {
+        builder.UseSetting("Autenticacao:Emissor", TokensDeTeste.Emissor);
+        builder.UseSetting("Autenticacao:Audiencia", TokensDeTeste.Audiencia);
+        builder.UseSetting("Autenticacao:ExigirHttps", "false");
+        builder.ConfigureTestServices(servicos =>
+            servicos.Configure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, o =>
+            {
+                o.Configuration = new OpenIdConnectConfiguration { Issuer = TokensDeTeste.Emissor };
+                o.Configuration.SigningKeys.Add(TokensDeTeste.Chave);
+            }));
+    }
+
+    public static void Autorizar(HttpClient cliente, string escopos) =>
+        cliente.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", TokensDeTeste.Emitir(escopos));
 }
 
 public static class Utilidades

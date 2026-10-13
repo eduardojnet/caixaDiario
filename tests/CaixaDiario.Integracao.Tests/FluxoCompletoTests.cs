@@ -17,22 +17,24 @@ namespace CaixaDiario.Integracao.Tests;
 public sealed class FluxoCompletoTests(BancoLancamentosFixture bancoLancamentos, BancoConsolidadoFixture bancoConsolidado)
     : IAsyncLifetime
 {
-    private readonly RabbitMqContainer _broker = new RabbitMqBuilder("rabbitmq:4.1.8-management-alpine")
-        .WithUsername("guest")
-        .WithPassword("guest")
-        .Build();
+    // Credencial por servico (ADR-0004): o fluxo completo prova que as
+    // permissoes minimas bastam para publicar, ligar a fila e consumir.
+    private readonly RabbitMqContainer _broker = BrokerDeTeste.Criar();
 
-    public async ValueTask InitializeAsync() => await _broker.StartAsync(TestContext.Current.CancellationToken);
+    public async ValueTask InitializeAsync()
+    {
+        await _broker.StartAsync(TestContext.Current.CancellationToken);
+        await BrokerDeTeste.AplicarPermissoesAsync(_broker, TestContext.Current.CancellationToken);
+    }
 
     public async ValueTask DisposeAsync() => await _broker.DisposeAsync();
 
     [Fact]
     public async Task Saldo_projetado_reconcilia_com_os_lancamentos_do_dia()
     {
-        var broker = new Broker(_broker.Hostname, _broker.GetMappedPublicPort(5672), "guest", "guest");
-        await using var consolidado = new FabricaConsolidado(bancoConsolidado.ConexaoAplicacao, broker);
+        await using var consolidado = new FabricaConsolidado(bancoConsolidado.ConexaoAplicacao, BrokerDeTeste.Consolidado(_broker));
         using var clienteConsolidado = consolidado.CreateClient();
-        await using var lancamentos = new FabricaLancamentos(bancoLancamentos.ConexaoAplicacao, broker);
+        await using var lancamentos = new FabricaLancamentos(bancoLancamentos.ConexaoAplicacao, BrokerDeTeste.Lancamentos(_broker));
         using var clienteLancamentos = lancamentos.CreateClient();
 
         var caixa = Utilidades.NovoCaixa();
@@ -98,10 +100,9 @@ public sealed class FluxoCompletoTests(BancoLancamentosFixture bancoLancamentos,
         };
         ActivitySource.AddActivityListener(ouvinte);
 
-        var broker = new Broker(_broker.Hostname, _broker.GetMappedPublicPort(5672), "guest", "guest");
-        await using var consolidado = new FabricaConsolidado(bancoConsolidado.ConexaoAplicacao, broker);
+        await using var consolidado = new FabricaConsolidado(bancoConsolidado.ConexaoAplicacao, BrokerDeTeste.Consolidado(_broker));
         using var clienteConsolidado = consolidado.CreateClient();
-        await using var lancamentos = new FabricaLancamentos(bancoLancamentos.ConexaoAplicacao, broker);
+        await using var lancamentos = new FabricaLancamentos(bancoLancamentos.ConexaoAplicacao, BrokerDeTeste.Lancamentos(_broker));
         using var clienteLancamentos = lancamentos.CreateClient();
 
         var traco = ActivityTraceId.CreateRandom();
