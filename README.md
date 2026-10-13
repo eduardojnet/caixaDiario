@@ -78,7 +78,7 @@ Resultado esperado: pasta `caixaDiario` com `docker-compose.yml` na raiz.
 docker compose up --build -d
 ```
 
-Resultado esperado: na primeira vez, as imagens são construídas e baixadas (alguns minutos). Confira com `docker compose ps -a`: `broker`, `keycloak`, `lancamentos-db` e `consolidado-db` aparecem `(healthy)`; `lancamentos`, `consolidado` e `painel`, `Up`; `certificados` aparece `Exited (0)`, porque só gera os certificados TLS do broker e termina. O Keycloak leva cerca de 30 segundos para ficar `(healthy)`.
+Resultado esperado: na primeira vez, as imagens são construídas e baixadas (alguns minutos). Confira com `docker compose ps -a`: `broker`, `keycloak`, `lancamentos-db` e `consolidado-db` aparecem `(healthy)`; `lancamentos`, `consolidado` e `painel`, `Up`; `certificados`, `lancamentos-migracoes` e `consolidado-migracoes` aparecem `Exited (0)`, porque geram os certificados TLS ou aplicam o esquema dos bancos e terminam. `docker compose logs lancamentos-migracoes` mostra os scripts aplicados; numa nova subida, "Nenhum script novo". O Keycloak leva cerca de 30 segundos para ficar `(healthy)`.
 
 **3. Conferir que as duas APIs estão prontas.**
 
@@ -224,23 +224,23 @@ docker compose down        # para e remove os contêineres; os dados ficam nos v
 docker compose down -v     # também apaga os volumes: bancos, fila e certificados voltam do zero
 ```
 
-Depois de `down -v`, o passo 2 recria tudo, inclusive esquemas e certificados.
+Depois de `down -v`, o passo 2 recria tudo, inclusive esquemas e certificados. Para receber uma mudança de esquema não é preciso apagar nada: o migrador de cada serviço aplica na próxima subida só os scripts novos ([ADR-0005](docs/adr/ADR-0005-migracao-versionada.md)). Exceção única: um volume criado antes da migração versionada precisa de um `down -v`.
 
 ---
 
 ## Testes
 
 ```bash
-dotnet test                 # 56 testes, sem erro e sem aviso
+dotnet test                 # 60 testes, sem erro e sem aviso
 ```
 
-Pré-requisitos: .NET SDK 10 e **Docker em execução**. Os testes de integração sobem PostgreSQL e RabbitMQ reais (Testcontainers) e aplicam os mesmos scripts de esquema que o compose usa.
+Pré-requisitos: .NET SDK 10 e **Docker em execução**. Os testes de integração sobem PostgreSQL e RabbitMQ reais (Testcontainers) e preparam os bancos com os mesmos migradores que o compose usa.
 
 | Projeto | Testes | O que verifica |
 |---|---|---|
 | `CaixaDiario.Dominio.Tests` | 25 | Validação do lançamento: valor positivo com duas casas, limites de tamanho e de valor, tipo, data futura recusada, regra do estorno |
 | `CaixaDiario.Arquitetura.Tests` | 4 | NetArchTest: nenhum tipo de Lancamentos referencia Consolidado; sem assembly compartilhado; domínio sem infraestrutura |
-| `CaixaDiario.Integracao.Tests` | 27 | **RNF-01** (Lancamentos sem Consolidado e sem broker responde `201`, a outbox acumula, a métrica mostra o acúmulo, e a outbox esvazia quando o broker volta), traço único do `POST` à projeção, idempotência sequencial e com 10 envios simultâneos, estorno, imutabilidade por privilégio do banco, projetor idempotente, reconciliação ponta a ponta, contrato do evento nos dois lados, segurança (`401` sem token ou com token inválido, `403` sem escopo, usuário do Consolidado recusado ao publicar no broker) |
+| `CaixaDiario.Integracao.Tests` | 31 | **RNF-01** (Lancamentos sem Consolidado e sem broker responde `201`, a outbox acumula, a métrica mostra o acúmulo, e a outbox esvazia quando o broker volta), traço único do `POST` à projeção, idempotência sequencial e com 10 envios simultâneos, estorno, imutabilidade por privilégio do banco, projetor idempotente, reconciliação ponta a ponta, contrato do evento nos dois lados, segurança (`401` sem token ou com token inválido, `403` sem escopo, usuário do Consolidado recusado ao publicar no broker), migração (segunda execução não reaplica; script novo aplicado sozinho) |
 
 **Por que banco real.** Idempotência sob envio simultâneo depende da chave única; imutabilidade depende de privilégio. Um repositório em memória passaria na implementação ingênua.
 
@@ -292,6 +292,7 @@ Taxa de chegada constante de 50 req/s por 60 s, limite `http_req_failed < 5%`. O
 | Integração contínua: build, testes, cobertura e mutação do domínio | Implementado: [GitHub Actions](.github/workflows/ci.yml), verde |
 | Arquitetura de transição a partir de legado | Especificado: [05](docs/05-arquitetura-de-transicao.md), sobre hipótese de legado declarada |
 | Estimativa de custo de infraestrutura e licenças | Especificado: [06](docs/06-estimativa-de-custos.md), preços da API pública da AWS em 2026-10-12 |
+| Migração versionada por serviço (DbUp) | Implementado ([ADR-0005](docs/adr/ADR-0005-migracao-versionada.md)); segunda subida sobre o mesmo volume não reaplica nada |
 | Integração com maquininha e banco | Especificado, fora do escopo |
 
 Detalhe e evidência de cada item em [docs/ESTADO.md](docs/ESTADO.md).
@@ -311,7 +312,6 @@ Cada item tem gatilho declarado; nenhum é necessário para os requisitos obriga
 | Evolução | Gatilho |
 |---|---|
 | Autorização por caixa (um comerciante não lê o caixa de outro), HTTPS no servidor de autorização e segredos em cofre | Mais de um comerciante real (QA-04) ou implantação fora do ambiente local |
-| Migração versionada (DbUp) no lugar dos scripts de inicialização | Primeira mudança de esquema depois da entrega |
 | Saldo acumulado de fechamento, além do resultado do dia | Resposta da QA-01 indicando acumulado |
 | Batimento periódico do despachante, para o Consolidado distinguir "sem lançamentos" de "outbox parada" | Requisito de detectar defasagem com o broker fora |
 

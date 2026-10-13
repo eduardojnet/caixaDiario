@@ -2,9 +2,9 @@
 
 **Documento vivo.** Atualizado ao fim de cada bloco de trabalho. Descreve o que existe, o que falta e o que está decidido, sem otimismo.
 
-**Última atualização:** 2026-10-12 (cartão 37 do backlog concluído)
+**Última atualização:** 2026-10-12 (cartão 39 do backlog concluído)
 **Build:** `dotnet build CaixaDiario.sln`: 0 avisos, 0 erros (`TreatWarningsAsErrors`, `AnalysisMode=Recommended`)
-**Testes:** 56 passando, 0 falhas (domínio 25, arquitetura 4, integração 27 com PostgreSQL e RabbitMQ reais via Testcontainers); carga k6 a 50 req/s com 0,00% de falha (com autenticação, p95 3,3 ms). CI verde no GitHub Actions; cobertura de linha do domínio 96,36%; mutação do domínio 98,21% (Stryker.NET 5.0.0), ambos com limite de 85%
+**Testes:** 60 passando, 0 falhas (domínio 25, arquitetura 4, integração 31 com PostgreSQL e RabbitMQ reais via Testcontainers); carga k6 a 50 req/s com 0,00% de falha (com autenticação, p95 3,3 ms). CI verde no GitHub Actions; cobertura de linha do domínio 96,36%; mutação do domínio 98,21% (Stryker.NET 5.0.0), ambos com limite de 85%
 
 ---
 
@@ -67,6 +67,7 @@ Conferidos contra o repositório publicado em 2026-10-12 21:37 (cartão 33): cad
 - Integração contínua (`.github/workflows/ci.yml`): build sem avisos, testes, cobertura do domínio ≥ 85% e mutação do domínio ≥ 85%, ações fixadas por SHA.
 - Observabilidade (ADR-0003): OpenTelemetry nos dois serviços, traço único do `POST` à projeção via `outbox.traceparent` e cabeçalho AMQP, métricas de outbox e projetor, logs por OTLP, painel Aspire Dashboard em `:18888`.
 - Segurança de integração (ADR-0004): OAuth2 client credentials com Keycloak, escopo por operação; usuário de broker por serviço com privilégio mínimo; TLS obrigatório no broker (5671), certificados gerados no primeiro `up`.
+- Migração versionada (ADR-0005): um migrador DbUp por serviço, executado antes da API; segunda subida sobre o mesmo volume não reaplica nada; senha do papel da aplicação redefinida a cada execução.
 - RNF medidos: RNF-01 (teste e demonstração no compose), RNF-02 e RNF-03 (k6: 3001 req a 50/s, 0,00% de falha, p95 1,56 ms), RNF-04 (reconciliação), RNF-06 (privilégio), RNF-07 (idempotência).
 
 ## 5. Especificado, não implementado
@@ -76,7 +77,6 @@ Conferidos contra o repositório publicado em 2026-10-12 21:37 (cartão 33): cad
 - Integrações com maquininha e banco (C1).
 - Arquitetura de Transição (`docs/05-arquitetura-de-transicao.md`): fachada, adaptador do legado e adaptador reverso especificados sobre legado hipotético (H-01 a H-05); nenhuma peça implementada.
 - Estimativa de custos (`docs/06-estimativa-de-custos.md`): nada implantado em nuvem; tamanho do armazenamento do Amazon MQ `mq.t3.micro` (20 GB) e valor em reais com impostos `[NVI]`.
-- Migração versionada: esquemas aplicados por script de inicialização do contêiner (cartão 39 no backlog).
 
 ## 6. Questões abertas e lacunas
 
@@ -88,7 +88,7 @@ Conferidos contra o repositório publicado em 2026-10-12 21:37 (cartão 33): cad
 | PR-01 a PR-04 | Premissas com impacto declarado | `docs/03-requisitos.md` §5 | Bloco 1 |
 | L-03 | Eventos publicados antes de existir a fila do Consolidado seriam descartados pela exchange fanout | Corrigido: publicação com `mandatory`; sem fila, o evento fica na outbox. Achado pelo teste de reconciliação | Bloco 4 |
 | L-04 | `defasado` baseado só no atraso do último evento ficaria verdadeiro para sempre depois de recuperar um acúmulo | Corrigido: estado do projetor (conexão e fila) entra no cálculo. Achado na demonstração do RNF-01 | Bloco 4 |
-| L-06 | Gatilho do cartão 39 (migração versionada) cumprido: `db/lancamentos/0003_rastreamento.sql` é a primeira mudança de esquema depois da entrega; só se aplica em volume novo (`docker compose down -v`) | Declarado no ADR-0003 e no README; cartão 39 aguarda decisão de Eduardo | Cartão 36 |
+| L-06 | Gatilho do cartão 39 (migração versionada) cumprido: `db/lancamentos/0003_rastreamento.sql` é a primeira mudança de esquema depois da entrega; só se aplica em volume novo (`docker compose down -v`) | Resolvida no cartão 39: migrador DbUp por serviço aplica scripts novos em volume existente (ADR-0005) | Cartão 36 |
 | L-05 | O Consolidado não enxerga a outbox de Lancamentos: com o broker fora, ele sabe que está desconectado, mas não quantos eventos esperam | Declarado; evolução: batimento periódico do despachante. Não muda o RNF-01 | Bloco 4 |
 
 ---
@@ -174,3 +174,6 @@ Conferidos contra o repositório publicado em 2026-10-12 21:37 (cartão 33): cad
 | 2026-10-12 | Cartão 37: entrypoint do broker espera o cookie do Erlang antes da CLI e roda a CLI como usuário rabbitmq (a primeira versão derrubou o broker com eacces) |
 | 2026-10-12 | 2026-10-12 22:48 cartão 37 concluído: ADR-0004; OAuth2 client credentials com Keycloak e escopo por operação; usuário de broker por serviço (permissoes.sh no compose e nos testes); TLS na 5671 com CA gerada no up; SegurancaDeIntegracaoTests verde (401 sem token e com token inválido, 403 sem escopo, ACCESS_REFUSED do Consolidado ao publicar); compose: 401/403/201, 5672 fechada, certificado validado; k6 com token 0,00% p95 3,3 ms; 56 testes verdes |
 | 2026-10-12 | Cartão 37: clone limpo em pasta temporária; blocos do README executados em sequência: 200/200, token, 201/201, idempotência 200 com Idempotency-Replayed, lista, RNF-01 201, 401/403, traço completo no painel; nota acrescentada para o 000 logo após a demonstração do RNF-01 |
+| 2026-10-12 | Cartão 39: Eduardo autorizou explicitamente ("Siga para o 39"); gatilho já cumprido no cartão 36 |
+| 2026-10-12 | Cartão 39: scripts copiados para scripts/<serviço>/ na saída, para os dois migradores não se misturarem quando referenciados pelo mesmo projeto de teste; 0002_senha_aplicacao.sh removidos, a senha passa a ser aplicada pelo migrador |
+| 2026-10-12 | 2026-10-12 23:05 cartão 39 concluído: ADR-0005; CaixaDiario.Lancamentos.Migracoes e CaixaDiario.Consolidado.Migracoes (DbUp 7.0.1, diário versoes_do_esquema); compose: primeira subida aplicou 0001 e 0003 / 0001, segunda subida sobre o mesmo volume "Nenhum script novo" nos dois; MigracaoTests e fixture com o mesmo migrador; 60 testes verdes |

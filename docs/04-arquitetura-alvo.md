@@ -68,6 +68,7 @@ Não há rota de alteração nem de exclusão de lançamento.
 ### 4.4. Dados
 
 - **Um banco por serviço.** Nenhum serviço lê o banco do outro.
+- **Esquema versionado:** cada serviço tem um migrador (DbUp) que aplica os scripts de `db/<serviço>/` ainda não aplicados e termina antes de a API subir ([ADR-0005](adr/ADR-0005-migracao-versionada.md)). É o único processo com a credencial administrativa do banco.
 - **Lancamentos:** tabela `lancamentos` append-only, com chave única `(caixa_id, chave_idempotencia)`; tabela `outbox` gravada na mesma transação. O papel da aplicação tem só `SELECT` e `INSERT` em `lancamentos` (RNF-06); `UPDATE` apenas na coluna de publicação da `outbox`.
 - **Consolidado:** `lancamentos_aplicados` (chave primária `lancamento_id`) e `saldo_diario` (chave `caixa_id, data`). Ambos reconstruíveis reprocessando os eventos.
 - **Valor monetário:** `numeric(14,2)` no banco, `decimal` no código. Nunca ponto flutuante.
@@ -95,7 +96,7 @@ Decidida no [ADR-0004](adr/ADR-0004-seguranca-de-integracao.md). As APIs exigem 
 
 ### 4.9. Implantação
 
-Local: Docker Compose com duas APIs, dois bancos, broker, servidor de autorização, painel de observabilidade e um gerador de certificados que termina após gerar; nome de projeto fixo e verificações de saúde. Em nuvem, especificado: as duas APIs em serviço gerenciado de contêiner, bancos gerenciados e broker gerenciado, mantidos contrato e topologia. Sem orquestrador de cluster: a carga declarada não o justifica (regra de proporcionalidade, ADR-0001).
+Local: Docker Compose com duas APIs, dois bancos, broker, servidor de autorização, painel de observabilidade, um migrador por banco e um gerador de certificados, que terminam após executar; nome de projeto fixo e verificações de saúde. Em nuvem, especificado: as duas APIs em serviço gerenciado de contêiner, bancos gerenciados e broker gerenciado, mantidos contrato e topologia. Sem orquestrador de cluster: a carga declarada não o justifica (regra de proporcionalidade, ADR-0001).
 
 ## 5. Trade-offs e riscos
 
@@ -107,7 +108,7 @@ Local: Docker Compose com duas APIs, dois bancos, broker, servidor de autorizaç
 | Projetor idempotente | Reentrega inofensiva | Tabela extra de aplicados | Soma dupla | Chave primária em `lancamento_id`; teste de reconciliação |
 | Limitador com `429` | Consolidado não cai em pico | Parte das consultas recusada | Orçamento de 5% estourar | Limite acima de 50 req/s; teste de carga |
 | Imutabilidade por privilégio | Garantia no banco, não em código | Correção só por estorno | | Estorno como fluxo previsto (RF-05) |
-| Scripts de inicialização no lugar de migração | Simples no prazo | Mudança de esquema exige recriar volume | Divergência de esquema após a entrega | Adotar migrador na primeira mudança (ADR-0002, gatilho) |
+| Migração versionada por serviço (ADR-0005) | Mudança de esquema sem recriar volume nem reaplicar scripts | Um contêiner de migração por serviço, código duplicado entre eles | Script com erro bloqueia a subida da API | Transação por script; a API só sobe com o migrador concluído |
 
 **Dependências externas:** nenhuma obrigatória. Maquininha e banco são evolução (C1).
 

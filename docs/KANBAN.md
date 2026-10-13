@@ -8,12 +8,12 @@ Espelho em texto do quadro mantido no TickTick (projeto `CaixaDiario`), que é a
 
 | Coluna | Cartões | Números |
 |---|---|---|
-| Backlog/Ideias | 3 | 39, 42, 43 |
+| Backlog/Ideias | 2 | 42, 43 |
 | A Fazer | 0 |  |
 | Em Andamento | 0 |  |
 | Em Revisão | 0 |  |
 | Bloqueado | 0 |  |
-| Concluído | 40 | 01 a 38, 40, 41 |
+| Concluído | 41 | 01 a 41 |
 
 ## Faixas de numeração
 
@@ -35,15 +35,6 @@ Espelho em texto do quadro mantido no TickTick (projeto `CaixaDiario`), que é a
 ---
 
 ## Backlog/Ideias
-
-### 39. Adotar migração versionada com DbUp
-
-**Bloco:** Backlog · **Prioridade:** baixa · **Etiquetas:** condicional, persistencia
-
-ÂNCORA: trade-off do cartão 21 (scripts de inicialização no lugar de migração).  
-POR QUE NÃO AGORA: custo de adaptação maior que o ganho em 5 h.  
-GATILHO: primeira mudança de esquema depois da entrega.  
-CRITÉRIO: migrador por serviço, subir duas vezes sobre o mesmo volume não reaplica nada.
 
 ### 42. Expor o saldo acumulado de fechamento
 
@@ -668,3 +659,13 @@ GATILHO: entrega aceita para próxima etapa.
 ESCOPO: 1. OAuth2 client credentials na API; 2. credencial de broker por serviço (Lancamentos só publica, Consolidado só consome); 3. TLS no broker.  
 CRITÉRIO: teste que prova recusa sem token e recusa de publicação pelo Consolidado.
 ENTREGA (2026-10-12 22:48): ADR-0004; OAuth2 client credentials com Keycloak e escopo por operação; usuário de broker por serviço (permissoes.sh no compose e nos testes); TLS na 5671 com CA gerada no up; SegurancaDeIntegracaoTests verde (401 sem token e com token inválido, 403 sem escopo, ACCESS_REFUSED do Consolidado ao publicar); compose: 401/403/201, 5672 fechada, certificado validado; k6 com token 0,00% p95 3,3 ms; 56 testes verdes.
+
+### 39. Adotar migração versionada com DbUp
+
+**Bloco:** Backlog · **Prioridade:** baixa · **Etiquetas:** condicional, persistencia
+
+ÂNCORA: trade-off do cartão 21 (scripts de inicialização no lugar de migração).  
+POR QUE NÃO AGORA: custo de adaptação maior que o ganho em 5 h.  
+GATILHO: primeira mudança de esquema depois da entrega.  
+CRITÉRIO: migrador por serviço, subir duas vezes sobre o mesmo volume não reaplica nada.
+ENTREGA (2026-10-12 23:05): ADR-0005; CaixaDiario.Lancamentos.Migracoes e CaixaDiario.Consolidado.Migracoes (DbUp 7.0.1, diário versoes_do_esquema); compose: primeira subida aplicou 0001 e 0003 / 0001, segunda subida sobre o mesmo volume "Nenhum script novo" nos dois; MigracaoTests e fixture com o mesmo migrador; 60 testes verdes.

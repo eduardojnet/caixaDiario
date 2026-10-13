@@ -67,6 +67,7 @@ A prontidão (`/health/ready`) da API Lancamentos verifica **só** o banco de la
 | Projetor | Implementado | `ProjetorRabbitMq.cs`; `ProjetorTests`, `FluxoCompletoTests` |
 | API Consolidado | Implementado | `src/CaixaDiario.Consolidado.Api`; teste de carga a 50 req/s com 0% de falha |
 | Banco do consolidado | Implementado | `db/consolidado/0001_esquema.sql` |
+| Migradores de esquema | Implementado | `lancamentos-migracoes` e `consolidado-migracoes` no compose; aplicam os scripts pendentes e terminam antes da API (ADR-0005). Fora do desenho por não participarem do fluxo de negócio |
 | Servidor de autorização | Implementado | Serviço `keycloak` do compose, realm em `infra/keycloak/`; ADR-0004. A seta tracejada é a busca das chaves públicas, guardadas em cache: com o Keycloak parado, um token válido continua aceito |
 | Painel de observabilidade | Implementado | Serviço `painel` do compose; ADR-0003; traço do POST à projeção conferido pela API do painel. Setas tracejadas: telemetria, fora do caminho de negócio, não implementação pendente |
 | Credencial de broker por serviço, TLS | Implementado | `infra/rabbitmq/`; ADR-0004; `SegurancaDeIntegracaoTests` |

@@ -1,6 +1,6 @@
 # ADR-0002: Adotar .NET 10, PostgreSQL 17 por serviço, Dapper e outbox com RabbitMQ
 
-- **Status:** Aceito em 2026-10-12 21:06 (portão G2)
+- **Status:** Aceito em 2026-10-12 21:06 (portão G2). A consequência "sem migração versionada" foi superada pelo [ADR-0005](ADR-0005-migracao-versionada.md), quando o gatilho de revisão se cumpriu
 - **Data:** 2026-10-12
 - **Decisor:** Eduardo J. G. do Carmo (Arquiteto de Soluções)
 - **Consultados:** nenhum além do enunciado
