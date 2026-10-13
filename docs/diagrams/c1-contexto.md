@@ -27,7 +27,7 @@ flowchart TB
 | Elemento | Estado | Observação |
 |---|---|---|
 | Comerciante, contador | Pessoas | Sem autenticação no ambiente local (QA-04) |
-| CaixaDiario | Ver [C2](c2-conteineres.md) | |
+| CaixaDiario | Implementado | Detalhe e evidência no [C2](c2-conteineres.md) |
 | Maquininha de cartão | Especificado, fora do escopo | Capacidade C4.1; o enunciado não exige integração externa |
 | Banco do comerciante | Especificado, fora do escopo | Capacidade C4.2 |
 

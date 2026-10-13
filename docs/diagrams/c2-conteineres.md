@@ -7,27 +7,27 @@ flowchart LR
     comerciante["Comerciante<br/>[Pessoa]"]:::externo
 
     subgraph critico["Zona crítica: Controle de Lançamentos"]
-        lapi["API Lancamentos<br/>[ASP.NET Core 10, :8080]<br/>Valida, registra com idempotência,<br/>lista o dia"]:::espec
-        desp["Despachante da outbox<br/>[BackgroundService, no processo<br/>da API Lancamentos]<br/>Publica eventos pendentes com retentativa"]:::espec
-        ldb[("Banco de lançamentos<br/>[PostgreSQL 17]<br/>lancamentos append-only<br/>e outbox, mesma transação")]:::espec
+        lapi["API Lancamentos<br/>[ASP.NET Core 10, :8080]<br/>Valida, registra com idempotência,<br/>lista o dia"]:::impl
+        desp["Despachante da outbox<br/>[BackgroundService, no processo<br/>da API Lancamentos]<br/>Publica eventos pendentes com retentativa"]:::impl
+        ldb[("Banco de lançamentos<br/>[PostgreSQL 17]<br/>lancamentos append-only<br/>e outbox, mesma transação")]:::impl
     end
 
-    broker[["Broker<br/>[RabbitMQ]<br/>Fila durável<br/>lancamento-registrado"]]:::espec
+    broker[["Broker<br/>[RabbitMQ]<br/>Fila durável<br/>lancamento-registrado"]]:::impl
 
     subgraph sacrificavel["Zona sacrificável: Consolidado Diário"]
-        proj["Projetor<br/>[BackgroundService, no processo<br/>da API Consolidado]<br/>Aplica cada evento uma vez"]:::espec
-        capi["API Consolidado<br/>[ASP.NET Core 10, :8081]<br/>Saldo do dia, cache curto,<br/>limitador com 429"]:::espec
-        cdb[("Banco do consolidado<br/>[PostgreSQL 17]<br/>saldo_diario e<br/>lancamentos_aplicados")]:::espec
+        proj["Projetor<br/>[BackgroundService, no processo<br/>da API Consolidado]<br/>Aplica cada evento uma vez"]:::impl
+        capi["API Consolidado<br/>[ASP.NET Core 10, :8081]<br/>Saldo do dia, cache curto,<br/>limitador com 429"]:::impl
+        cdb[("Banco do consolidado<br/>[PostgreSQL 17]<br/>saldo_diario e<br/>lancamentos_aplicados")]:::impl
     end
 
-    comerciante -.->|"registra<br/>HTTP/JSON"| lapi
-    comerciante -.->|"consulta saldo<br/>HTTP/JSON"| capi
-    lapi -.->|"INSERT lançamento + evento<br/>uma transação"| ldb
-    desp -.->|"lê e marca a outbox"| ldb
-    desp -.->|"publica<br/>AMQP, confirmação"| broker
-    broker -.->|"entrega ao menos uma vez<br/>AMQP, ack manual"| proj
-    proj -.->|"aplica idempotente"| cdb
-    capi -.->|"SELECT por chave"| cdb
+    comerciante -->|"registra<br/>HTTP/JSON"| lapi
+    comerciante -->|"consulta saldo<br/>HTTP/JSON"| capi
+    lapi -->|"INSERT lançamento + evento<br/>uma transação"| ldb
+    desp -->|"lê e marca a outbox"| ldb
+    desp -->|"publica<br/>AMQP, confirmação"| broker
+    broker -->|"entrega ao menos uma vez<br/>AMQP, ack manual"| proj
+    proj -->|"aplica idempotente"| cdb
+    capi -->|"SELECT por chave"| cdb
 
     classDef externo fill:#999999,stroke:#6b6b6b,color:#fff
     classDef impl fill:#1168bd,stroke:#0b4884,color:#fff
@@ -52,13 +52,14 @@ A prontidão (`/health/ready`) da API Lancamentos verifica **só** o banco de la
 
 | Elemento | Estado | Evidência |
 |---|---|---|
-| API Lancamentos | Especificado | Implementação no Bloco 4 |
-| Despachante da outbox | Especificado | Implementação no Bloco 4 |
-| Banco de lançamentos | Especificado | Implementação no Bloco 4 |
-| Broker | Especificado | Implementação no Bloco 4 |
-| Projetor | Especificado | Implementação no Bloco 4 |
-| API Consolidado | Especificado | Implementação no Bloco 4 |
-| Banco do consolidado | Especificado | Implementação no Bloco 4 |
+| API Lancamentos | Implementado | `src/CaixaDiario.Lancamentos.Api`; `RegistroDeLancamentoTests` |
+| Despachante da outbox | Implementado | `DespachanteOutbox.cs`; `Rnf01IsolamentoTests` (outbox acumula sem broker e esvazia quando ele volta) |
+| Banco de lançamentos | Implementado | `db/lancamentos/0001_esquema.sql`; `ImutabilidadeTests` (UPDATE e DELETE recusados pelo banco) |
+| Broker | Implementado | Serviço `broker` do `docker-compose.yml`, RabbitMQ 4.1.8 |
+| Projetor | Implementado | `ProjetorRabbitMq.cs`; `ProjetorTests`, `FluxoCompletoTests` |
+| API Consolidado | Implementado | `src/CaixaDiario.Consolidado.Api`; teste de carga a 50 req/s com 0% de falha |
+| Banco do consolidado | Implementado | `db/consolidado/0001_esquema.sql` |
+| Credencial de broker por serviço, TLS | Especificado | Ambiente local usa um usuário só no broker ([Arquitetura Alvo](../04-arquitetura-alvo.md) §4.8) |
 
 ## Decisões que o diagrama torna visíveis
 

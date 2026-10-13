@@ -10,6 +10,7 @@ Evento publicado pelo Controle de Lançamentos a cada lançamento registrado, co
 | Formato | JSON, UTF-8, `content-type: application/json` |
 | Tipo da mensagem | Propriedade AMQP `type` = `LancamentoRegistrado.v1`; `message-id` = `eventoId` |
 | Entrega | **Ao menos uma vez.** Pode chegar repetido e fora de ordem |
+| Publicação | Persistente, com confirmação do broker e `mandatory`: sem fila ligada à exchange, o evento é devolvido e permanece na outbox de Lancamentos até existir consumidor. Nenhum evento é descartado por falta de fila |
 | Compartilhamento de código | **Nenhum.** Cada serviço tem seu próprio tipo; os dois validam contra o exemplo abaixo |
 
 ## Campos

@@ -82,12 +82,12 @@ Como a consulta do saldo do dia é frequente em pico e muda pouco entre lançame
 
 1. **Cache em memória de curta duração** (poucos segundos) por `(caixaId, data)`: reduz leituras repetidas no banco. O custo é servir um saldo de instantes atrás; `atualizadoAte` torna isso visível.
 2. **Limitador de taxa com fila curta:** acima do limite configurado, a requisição excedente recebe `429` imediatamente, em vez de acumular e derrubar o serviço. Cada `429` conta como falha no orçamento de 5% (RNF-03); o limite é dimensionado acima de 50 req/s para que o orçamento não seja consumido em operação normal.
-3. **Marca de defasagem:** se o último evento aplicado tiver mais que o limite do RNF-05, a resposta traz `defasado: true`. A consulta não falha por atraso; informa.
+3. **Marca de defasagem:** a resposta traz `defasado: true` quando o projetor não está conectado ao broker (não há como garantir que o saldo está em dia) ou quando há fila acumulada e o último evento aplicado chegou com atraso acima do limite do RNF-05. O Consolidado mede isso sozinho, pela própria fila, sem consultar Lancamentos. A consulta não falha por atraso; informa.
 4. **Lancamentos não usa cache nem limitador** neste escopo: sua carga não foi declarada, e o registro precisa ser imediato.
 
 ### 4.7. Observabilidade
 
-Logs estruturados em JSON nos dois serviços, com identificador de correlação por requisição e o `eventoId` propagado como propriedade da mensagem AMQP, de forma que um lançamento seja rastreável do `POST` à projeção. Métricas que importam para os RNF: tamanho da outbox pendente e idade do evento mais antigo não publicado (sinal de broker fora), defasagem do projetor (`agora − atualizadoAte`), taxa de respostas por código no Consolidado (orçamento de 5%) e latência p95 da consulta. Alvo: traço distribuído com OpenTelemetry, do `POST` ao `COMMIT` da projeção, exportado por OTLP. Implementado neste escopo: logs estruturados e verificações de saúde; métricas e traço são especificados.
+Logs estruturados em JSON nos dois serviços, com identificador de correlação por requisição e o `eventoId` propagado como propriedade da mensagem AMQP, de forma que um lançamento seja rastreável do `POST` à projeção. Métricas que importam para os RNF: tamanho da outbox pendente e idade do evento mais antigo não publicado (sinal de broker fora), defasagem do projetor (`agora − atualizadoAte`), taxa de respostas por código no Consolidado (orçamento de 5%) e latência p95 da consulta. Alvo: traço distribuído com OpenTelemetry, do `POST` ao `COMMIT` da projeção, exportado por OTLP. Implementado neste escopo: logs estruturados em JSON e verificações de saúde; métricas e traço são especificados.
 
 ### 4.8. Segurança de integração
 

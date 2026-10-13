@@ -77,4 +77,4 @@ O papel da aplicação em Lancamentos não tem `UPDATE` nem `DELETE` na tabela `
 
 ## Estado
 
-Todos os passos: **especificado**, implementação no Bloco 4. A fonte do estado é o [ESTADO.md](../ESTADO.md).
+Todos os passos: **implementado**. Evidência: `RegistroDeLancamentoTests` (passos 1 a 11), `Rnf01IsolamentoTests` (12 a 15), `ProjetorTests` e `FluxoCompletoTests` (16 a 27). O despacho publica com `mandatory`: sem fila ligada à exchange, o broker devolve o evento, a publicação falha e o evento permanece na outbox (passo 13). A fonte do estado é o [ESTADO.md](../ESTADO.md).

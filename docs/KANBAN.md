@@ -373,12 +373,12 @@ CRITÉRIO: dotnet build sem avisos; docker compose config válido com 2 APIs, 2 
 RISCO: é o bloco que estoura primeiro; falha aqui, sozinha, aciona o descarte.  
 TETO: 12 min (Bloco 4).
 
-- [ ] 20.1 CaixaDiario.sln com Lancamentos.Dominio, Lancamentos.Api, Consolidado.Api
-- [ ] 20.2 Projetos de teste: Dominio, Arquitetura, Integracao
-- [ ] 20.3 Dockerfile multi-stage com USER $APP_UID para cada API
-- [ ] 20.4 docker-compose.yml: lancamentos, lancamentos-db, broker, consolidado, consolidado-db
-- [ ] 20.5 .env.example
-- [ ] 20.6 Health checks /health/live e /health/ready
+- [x] 20.1 CaixaDiario.sln com Lancamentos.Dominio, Lancamentos.Api, Consolidado.Api
+- [x] 20.2 Projetos de teste: Dominio, Arquitetura, Integracao
+- [x] 20.3 Dockerfile multi-stage com USER $APP_UID para cada API
+- [x] 20.4 docker-compose.yml: lancamentos, lancamentos-db, broker, consolidado, consolidado-db
+- [x] 20.5 .env.example
+- [x] 20.6 Health checks /health/live e /health/ready
 
 ### 21. Implementar o esquema de banco dos dois serviços
 
@@ -390,11 +390,11 @@ RISCO: imutabilidade só em código não é controle.
 TRADE-OFF: sem DbUp neste prazo (cartão 39 no backlog).  
 TETO: 8 min (Bloco 4).
 
-- [ ] 21.1 Ledger append-only com chave única de idempotência
-- [ ] 21.2 Tabela outbox
-- [ ] 21.3 Papéis e GRANT SELECT, INSERT
-- [ ] 21.4 saldo_diario e lancamentos_aplicados no consolidado
-- [ ] 21.5 Montar via docker-entrypoint-initdb.d
+- [x] 21.1 Ledger append-only com chave única de idempotência
+- [x] 21.2 Tabela outbox
+- [x] 21.3 Papéis e GRANT SELECT, INSERT
+- [x] 21.4 saldo_diario e lancamentos_aplicados no consolidado
+- [x] 21.5 Montar via docker-entrypoint-initdb.d
 
 ### 22. Implementar o registro de lançamento idempotente em Lancamentos
 
@@ -405,11 +405,11 @@ CRITÉRIO: POST /v1/caixas/{caixaId}/lancamentos responde 201 novo, 200 com Idem
 RISCO: reenvio duplicado corrompe o saldo.  
 TETO: 12 min (Bloco 4).
 
-- [ ] 22.1 Domínio: Lancamento, TipoLancamento, valor positivo, data futura recusada
-- [ ] 22.2 Endpoint POST com Idempotency-Key obrigatório
-- [ ] 22.3 Lançamento e evento na mesma transação
-- [ ] 22.4 Detecção de reenvio por violação de chave única
-- [ ] 22.5 GET /v1/caixas/{caixaId}/lancamentos?data=
+- [x] 22.1 Domínio: Lancamento, TipoLancamento, valor positivo, data futura recusada
+- [x] 22.2 Endpoint POST com Idempotency-Key obrigatório
+- [x] 22.3 Lançamento e evento na mesma transação
+- [x] 22.4 Detecção de reenvio por violação de chave única
+- [x] 22.5 GET /v1/caixas/{caixaId}/lancamentos?data=
 
 ### 23. Implementar a outbox e o despachante para o broker
 
@@ -420,10 +420,10 @@ CRITÉRIO: com broker no ar, a outbox esvazia; com broker fora, o POST segue res
 RISCO: despachante bloqueante transforma queda do broker em queda de Lancamentos.  
 TETO: 10 min (Bloco 4).
 
-- [ ] 23.1 BackgroundService de despacho com backoff
-- [ ] 23.2 Publicador real no broker
-- [ ] 23.3 Marca de publicado e entrega ao menos uma vez
-- [ ] 23.4 Ready de Lancamentos não depende do broker
+- [x] 23.1 BackgroundService de despacho com backoff
+- [x] 23.2 Publicador real no broker
+- [x] 23.3 Marca de publicado e entrega ao menos uma vez
+- [x] 23.4 Ready de Lancamentos não depende do broker
 
 ### 24. Implementar o projetor e a consulta do Consolidado
 
@@ -434,12 +434,12 @@ CRITÉRIO: GET /v1/caixas/{caixaId}/consolidado/{data} devolve totalCreditos, to
 RISCO: projetor não idempotente quebra a reconciliação.  
 TETO: 12 min (Bloco 4).
 
-- [ ] 24.1 Consumidor do evento LancamentoRegistrado v1 com DTO próprio
-- [ ] 24.2 Aplicação idempotente por lancamentoId
-- [ ] 24.3 Endpoint de consulta do consolidado
-- [ ] 24.4 Cache em memória de curta duração
-- [ ] 24.5 Limitador de taxa com fila curta, excedente em 429
-- [ ] 24.6 Marca de defasagem
+- [x] 24.1 Consumidor do evento LancamentoRegistrado v1 com DTO próprio
+- [x] 24.2 Aplicação idempotente por lancamentoId
+- [x] 24.3 Endpoint de consulta do consolidado
+- [x] 24.4 Cache em memória de curta duração
+- [x] 24.5 Limitador de taxa com fila curta, excedente em 429
+- [x] 24.6 Marca de defasagem
 
 ### 25. Provar o RNF-01: Lancamentos aceita escrita sem Consolidado nem broker
 
@@ -450,10 +450,10 @@ CRITÉRIO: teste de integração verde: Lancamentos com PostgreSQL real (Testcon
 RISCO: sem prova executável, o único RNF duro do enunciado fica só declarado.  
 TETO: 8 min (Bloco 4).
 
-- [ ] 25.1 Fixture Testcontainers de PostgreSQL e broker
-- [ ] 25.2 Teste: 201 sem Consolidado e sem broker
-- [ ] 25.3 Teste: outbox acumula e depois esvazia
-- [ ] 25.4 Teste NetArchTest da dependência unidirecional
+- [x] 25.1 Fixture Testcontainers de PostgreSQL e broker
+- [x] 25.2 Teste: 201 sem Consolidado e sem broker
+- [x] 25.3 Teste: outbox acumula e depois esvazia
+- [x] 25.4 Teste NetArchTest da dependência unidirecional
 
 ### 26. Testar idempotência, reconciliação, imutabilidade e domínio
 
@@ -464,11 +464,11 @@ CRITÉRIO: dotnet test verde, sem aviso, com os casos abaixo.
 REGRA DE CORTE: se o tempo apertar, corta-se do fim da lista, nunca o 25.  
 TETO: 8 min (Bloco 4).
 
-- [ ] 26.1 Idempotência: mesma chave e corpo, um lançamento; corpo diferente, 422
-- [ ] 26.2 Reconciliação: saldo projetado igual a créditos menos débitos do dia
-- [ ] 26.3 Projetor idempotente: evento duplicado não soma duas vezes
-- [ ] 26.4 Imutabilidade: UPDATE e DELETE recusados pelo banco
-- [ ] 26.5 Domínio: valor positivo, tipo válido, data futura recusada
+- [x] 26.1 Idempotência: mesma chave e corpo, um lançamento; corpo diferente, 422
+- [x] 26.2 Reconciliação: saldo projetado igual a créditos menos débitos do dia
+- [x] 26.3 Projetor idempotente: evento duplicado não soma duas vezes
+- [x] 26.4 Imutabilidade: UPDATE e DELETE recusados pelo banco
+- [x] 26.5 Domínio: valor positivo, tipo válido, data futura recusada
 
 ### 27. Verificar o ambiente completo pelo docker compose
 
@@ -479,10 +479,10 @@ CRITÉRIO: docker compose up --build -d sobe tudo; POST responde 201; GET do con
 RISCO: se não subir na máquina do avaliador, documentação perfeita não salva.  
 TETO: 5 min (Bloco 4).
 
-- [ ] 27.1 Subir o ambiente do zero
-- [ ] 27.2 Registrar lançamento e conferir o saldo
-- [ ] 27.3 Derrubar Consolidado e banco dele e lançar de novo
-- [ ] 27.4 Registrar as saídas no ESTADO e fazer push
+- [x] 27.1 Subir o ambiente do zero
+- [x] 27.2 Registrar lançamento e conferir o saldo
+- [x] 27.3 Derrubar Consolidado e banco dele e lançar de novo
+- [x] 27.4 Registrar as saídas no ESTADO e fazer push
 
 ### 28. Medir o RNF-02 com teste de carga a 50 req/s
 
@@ -494,9 +494,9 @@ CONDICIONAL: se o teto do Bloco 4 chegar antes, o script fica versionado e marca
 RISCO: sem medição, a meta de 5% fica declarada sem evidência.  
 TETO: 5 min (Bloco 4).
 
-- [ ] 28.1 Escrever o script k6 com cenário constant-arrival-rate
-- [ ] 28.2 Fixar a imagem do k6 em versão conferida [NVI]
-- [ ] 28.3 Executar e registrar taxa de erro e p95
+- [x] 28.1 Escrever o script k6 com cenário constant-arrival-rate
+- [x] 28.2 Fixar a imagem do k6 em versão conferida [NVI]
+- [x] 28.3 Executar e registrar taxa de erro e p95
 
 ### 29. Redigir a seção do README: como a aplicação funciona
 
