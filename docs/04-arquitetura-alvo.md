@@ -91,11 +91,11 @@ Instrumentação com OpenTelemetry nos dois serviços, exportada por OTLP para u
 
 ### 4.8. Segurança de integração
 
-Credencial de broker por serviço, com privilégio mínimo: Lancamentos só publica na exchange, Consolidado só consome da sua fila; nenhum dos dois administra o broker. Credencial de banco por serviço, sem acesso cruzado; o papel da aplicação de Lancamentos não altera nem apaga lançamentos. Alvo: TLS no broker e nos bancos, identidade de serviço, e OAuth2 client credentials na API, com autorização por `caixaId`. Ambiente local, declarado: sem TLS e sem autenticação na API, senhas por variável de ambiente (`.env`, fora do repositório).
+Decidida no [ADR-0004](adr/ADR-0004-seguranca-de-integracao.md). As APIs exigem OAuth2 client credentials: o cliente obtém um token JWT no servidor de autorização (Keycloak, no ambiente local) e a API valida localmente emissor, audiência, validade, assinatura e escopo, sem consultar o servidor a cada requisição. Escopos por operação: `lancamentos.escrita`, `lancamentos.leitura`, `consolidado.leitura`; o cliente `contador` lê e não escreve. No broker, um usuário por serviço com privilégio mínimo: Lancamentos só declara e publica na exchange do contrato; Consolidado só declara, liga e consome a própria fila, e recebe recusa ao tentar publicar na exchange. O AMQP trafega só com TLS (porta 5671), com certificado gerado no primeiro `up` e validado contra a CA local; a porta sem TLS está fechada. Credencial de banco por serviço, sem acesso cruzado. Limites declarados do ambiente local: servidor de autorização em HTTP e com segredos padrão conhecidos; autorização por caixa ainda não existe (QA-04).
 
 ### 4.9. Implantação
 
-Local: Docker Compose com cinco contêineres (duas APIs, dois bancos, broker), nome de projeto fixo e verificações de saúde. Em nuvem, especificado: as duas APIs em serviço gerenciado de contêiner, bancos gerenciados e broker gerenciado, mantidos contrato e topologia. Sem orquestrador de cluster: a carga declarada não o justifica (regra de proporcionalidade, ADR-0001).
+Local: Docker Compose com duas APIs, dois bancos, broker, servidor de autorização, painel de observabilidade e um gerador de certificados que termina após gerar; nome de projeto fixo e verificações de saúde. Em nuvem, especificado: as duas APIs em serviço gerenciado de contêiner, bancos gerenciados e broker gerenciado, mantidos contrato e topologia. Sem orquestrador de cluster: a carga declarada não o justifica (regra de proporcionalidade, ADR-0001).
 
 ## 5. Trade-offs e riscos
 

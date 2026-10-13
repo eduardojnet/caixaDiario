@@ -2,9 +2,9 @@
 
 **Documento vivo.** Atualizado ao fim de cada bloco de trabalho. Descreve o que existe, o que falta e o que está decidido, sem otimismo.
 
-**Última atualização:** 2026-10-12 (cartão 36 do backlog concluído)
+**Última atualização:** 2026-10-12 (cartão 37 do backlog concluído)
 **Build:** `dotnet build CaixaDiario.sln`: 0 avisos, 0 erros (`TreatWarningsAsErrors`, `AnalysisMode=Recommended`)
-**Testes:** 52 passando, 0 falhas (domínio 25, arquitetura 4, integração 23 com PostgreSQL e RabbitMQ reais via Testcontainers); carga k6 a 50 req/s com 0,00% de falha. CI verde no GitHub Actions; cobertura de linha do domínio 96,36%; mutação do domínio 98,21% (Stryker.NET 5.0.0), ambos com limite de 85%
+**Testes:** 56 passando, 0 falhas (domínio 25, arquitetura 4, integração 27 com PostgreSQL e RabbitMQ reais via Testcontainers); carga k6 a 50 req/s com 0,00% de falha (com autenticação, p95 3,3 ms). CI verde no GitHub Actions; cobertura de linha do domínio 96,36%; mutação do domínio 98,21% (Stryker.NET 5.0.0), ambos com limite de 85%
 
 ---
 
@@ -66,12 +66,13 @@ Conferidos contra o repositório publicado em 2026-10-12 21:37 (cartão 33): cad
 - C3 componentes (`docs/diagrams/c3-componentes.md`), desenhado a partir do código.
 - Integração contínua (`.github/workflows/ci.yml`): build sem avisos, testes, cobertura do domínio ≥ 85% e mutação do domínio ≥ 85%, ações fixadas por SHA.
 - Observabilidade (ADR-0003): OpenTelemetry nos dois serviços, traço único do `POST` à projeção via `outbox.traceparent` e cabeçalho AMQP, métricas de outbox e projetor, logs por OTLP, painel Aspire Dashboard em `:18888`.
+- Segurança de integração (ADR-0004): OAuth2 client credentials com Keycloak, escopo por operação; usuário de broker por serviço com privilégio mínimo; TLS obrigatório no broker (5671), certificados gerados no primeiro `up`.
 - RNF medidos: RNF-01 (teste e demonstração no compose), RNF-02 e RNF-03 (k6: 3001 req a 50/s, 0,00% de falha, p95 1,56 ms), RNF-04 (reconciliação), RNF-06 (privilégio), RNF-07 (idempotência).
 
 ## 5. Especificado, não implementado
 
 - RNF-05: meta de 5 s mantida como proposta `[NVI]`. A marca `defasado` está implementada; a defasagem em operação normal não foi medida com instrumento (observada abaixo de 1 s nas demonstrações, sem registro sistemático).
-- Segurança de integração: credencial de broker por serviço, TLS, OAuth2 client credentials na API (§4.8). Ambiente local usa um usuário só no broker e não autentica a API.
+- Segurança, limites declarados (ADR-0004): servidor de autorização em HTTP e com segredos padrão; sem autorização por caixa (QA-04); usuário `consolidado` pode apagar a exchange que declara.
 - Integrações com maquininha e banco (C1).
 - Arquitetura de Transição (`docs/05-arquitetura-de-transicao.md`): fachada, adaptador do legado e adaptador reverso especificados sobre legado hipotético (H-01 a H-05); nenhuma peça implementada.
 - Estimativa de custos (`docs/06-estimativa-de-custos.md`): nada implantado em nuvem; tamanho do armazenamento do Amazon MQ `mq.t3.micro` (20 GB) e valor em reais com impostos `[NVI]`.
@@ -169,3 +170,6 @@ Conferidos contra o repositório publicado em 2026-10-12 21:37 (cartão 33): cad
 | 2026-10-12 | Cartão 36: Eduardo autorizou explicitamente ("Completa com OpenTelemetry. Siga para o 36"), exceção à regra 15 só para a observabilidade; segue valendo para o 37 |
 | 2026-10-12 | Cartão 36: API de leitura do painel aberta sem autenticação (`DASHBOARD__API__AUTHMODE: Unsecured`), só no ambiente local, para conferir o traço por linha de comando |
 | 2026-10-12 | 2026-10-12 22:25 cartão 36 concluído: ADR-0003; OpenTelemetry nos dois serviços com traceparent gravado na outbox e propagado no cabeçalho AMQP; métricas de outbox, projetor, HTTP e limitador; painel Aspire no compose; traço único POST → outbox publicar → projetor aplicar conferido pela API do painel (8 spans, 2 serviços) e por teste; 52 testes verdes; POST 201 com o painel parado |
+| 2026-10-12 | Cartão 37: Eduardo autorizou explicitamente ("Siga para o card 37"); com isso, a regra 15 foi excedida nos quatro diferenciais, sempre por ordem explícita |
+| 2026-10-12 | Cartão 37: entrypoint do broker espera o cookie do Erlang antes da CLI e roda a CLI como usuário rabbitmq (a primeira versão derrubou o broker com eacces) |
+| 2026-10-12 | 2026-10-12 22:48 cartão 37 concluído: ADR-0004; OAuth2 client credentials com Keycloak e escopo por operação; usuário de broker por serviço (permissoes.sh no compose e nos testes); TLS na 5671 com CA gerada no up; SegurancaDeIntegracaoTests verde (401 sem token e com token inválido, 403 sem escopo, ACCESS_REFUSED do Consolidado ao publicar); compose: 401/403/201, 5672 fechada, certificado validado; k6 com token 0,00% p95 3,3 ms; 56 testes verdes |

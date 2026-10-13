@@ -8,12 +8,12 @@ Espelho em texto do quadro mantido no TickTick (projeto `CaixaDiario`), que é a
 
 | Coluna | Cartões | Números |
 |---|---|---|
-| Backlog/Ideias | 4 | 37, 39, 42, 43 |
+| Backlog/Ideias | 3 | 39, 42, 43 |
 | A Fazer | 0 |  |
 | Em Andamento | 0 |  |
 | Em Revisão | 0 |  |
 | Bloqueado | 0 |  |
-| Concluído | 39 | 01 a 36, 38, 40, 41 |
+| Concluído | 40 | 01 a 38, 40, 41 |
 
 ## Faixas de numeração
 
@@ -35,16 +35,6 @@ Espelho em texto do quadro mantido no TickTick (projeto `CaixaDiario`), que é a
 ---
 
 ## Backlog/Ideias
-
-### 37. Implementar a autenticação entre serviços e na API
-
-**Bloco:** Backlog · **Prioridade:** baixa · **Etiquetas:** condicional, arquitetura
-
-ÂNCORA: requisito diferencial 'Critérios de segurança para integração'.  
-POR QUE NÃO AGORA: teto de um parágrafo; ambiente local sem autenticação, declarado.  
-GATILHO: entrega aceita para próxima etapa.  
-ESCOPO: 1. OAuth2 client credentials na API; 2. credencial de broker por serviço (Lancamentos só publica, Consolidado só consome); 3. TLS no broker.  
-CRITÉRIO: teste que prova recusa sem token e recusa de publicação pelo Consolidado.
 
 ### 39. Adotar migração versionada com DbUp
 
@@ -667,3 +657,14 @@ GATILHO: entrega aceita para próxima etapa, ou pedido do avaliador.
 ESCOPO: 1. traço distribuído pelo evento; 2. métricas de defasagem do projetor e tamanho da outbox; 3. painel local.  
 CRITÉRIO: traço único do POST até a projeção visível no painel.
 ENTREGA (2026-10-12 22:25): ADR-0003; OpenTelemetry nos dois serviços com traceparent gravado na outbox e propagado no cabeçalho AMQP; métricas de outbox, projetor, HTTP e limitador; painel Aspire no compose; traço único POST → outbox publicar → projetor aplicar conferido pela API do painel (8 spans, 2 serviços) e por teste; 52 testes verdes; POST 201 com o painel parado.
+
+### 37. Implementar a autenticação entre serviços e na API
+
+**Bloco:** Backlog · **Prioridade:** baixa · **Etiquetas:** condicional, arquitetura
+
+ÂNCORA: requisito diferencial 'Critérios de segurança para integração'.  
+POR QUE NÃO AGORA: teto de um parágrafo; ambiente local sem autenticação, declarado.  
+GATILHO: entrega aceita para próxima etapa.  
+ESCOPO: 1. OAuth2 client credentials na API; 2. credencial de broker por serviço (Lancamentos só publica, Consolidado só consome); 3. TLS no broker.  
+CRITÉRIO: teste que prova recusa sem token e recusa de publicação pelo Consolidado.
+ENTREGA (2026-10-12 22:48): ADR-0004; OAuth2 client credentials com Keycloak e escopo por operação; usuário de broker por serviço (permissoes.sh no compose e nos testes); TLS na 5671 com CA gerada no up; SegurancaDeIntegracaoTests verde (401 sem token e com token inválido, 403 sem escopo, ACCESS_REFUSED do Consolidado ao publicar); compose: 401/403/201, 5672 fechada, certificado validado; k6 com token 0,00% p95 3,3 ms; 56 testes verdes.

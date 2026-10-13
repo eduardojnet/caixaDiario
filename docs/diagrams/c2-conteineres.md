@@ -20,14 +20,18 @@ flowchart LR
         cdb[("Banco do consolidado<br/>[PostgreSQL 17]<br/>saldo_diario e<br/>lancamentos_aplicados")]:::impl
     end
 
+    keycloak["Servidor de autorização<br/>[Keycloak, :8180]<br/>Emite tokens OAuth2<br/>client credentials"]:::impl
     painel["Painel de observabilidade<br/>[Aspire Dashboard, :18888]<br/>Traços, métricas e logs por OTLP"]:::impl
 
-    comerciante -->|"registra<br/>HTTP/JSON"| lapi
-    comerciante -->|"consulta saldo<br/>HTTP/JSON"| capi
+    comerciante -->|"obtém token"| keycloak
+    comerciante -->|"registra<br/>HTTP/JSON + token"| lapi
+    comerciante -->|"consulta saldo<br/>HTTP/JSON + token"| capi
     lapi -->|"INSERT lançamento + evento<br/>uma transação"| ldb
     desp -->|"lê e marca a outbox"| ldb
-    desp -->|"publica<br/>AMQP, confirmação"| broker
-    broker -->|"entrega ao menos uma vez<br/>AMQP, ack manual"| proj
+    desp -->|"publica<br/>AMQP/TLS, usuário lancamentos"| broker
+    broker -->|"entrega ao menos uma vez<br/>AMQP/TLS, usuário consolidado"| proj
+    lapi -.->|"chaves públicas, em cache"| keycloak
+    capi -.->|"chaves públicas, em cache"| keycloak
     proj -->|"aplica idempotente"| cdb
     capi -->|"SELECT por chave"| cdb
     lapi -.->|"OTLP, assíncrono,<br/>descarta se cair"| painel
@@ -63,8 +67,9 @@ A prontidão (`/health/ready`) da API Lancamentos verifica **só** o banco de la
 | Projetor | Implementado | `ProjetorRabbitMq.cs`; `ProjetorTests`, `FluxoCompletoTests` |
 | API Consolidado | Implementado | `src/CaixaDiario.Consolidado.Api`; teste de carga a 50 req/s com 0% de falha |
 | Banco do consolidado | Implementado | `db/consolidado/0001_esquema.sql` |
+| Servidor de autorização | Implementado | Serviço `keycloak` do compose, realm em `infra/keycloak/`; ADR-0004. A seta tracejada é a busca das chaves públicas, guardadas em cache: com o Keycloak parado, um token válido continua aceito |
 | Painel de observabilidade | Implementado | Serviço `painel` do compose; ADR-0003; traço do POST à projeção conferido pela API do painel. Setas tracejadas: telemetria, fora do caminho de negócio, não implementação pendente |
-| Credencial de broker por serviço, TLS | Especificado | Ambiente local usa um usuário só no broker ([Arquitetura Alvo](../04-arquitetura-alvo.md) §4.8) |
+| Credencial de broker por serviço, TLS | Implementado | `infra/rabbitmq/`; ADR-0004; `SegurancaDeIntegracaoTests` |
 
 ## Decisões que o diagrama torna visíveis
 
