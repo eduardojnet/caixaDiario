@@ -51,6 +51,29 @@ public sealed class ContratoTests
         Assert.Null(Consolidado.Api.EventoLancamentoRegistradoV1.Ler(System.Text.Encoding.UTF8.GetBytes(corpo)));
     }
 
+    private static readonly string ExemploBatimento = File.ReadAllText(
+        Path.Combine(AppContext.BaseDirectory, "contratos", "batimento-do-despachante.v1.exemplo.json"));
+
+    [Fact]
+    public void Produtor_publica_o_batimento_com_os_campos_do_contrato()
+    {
+        var batimento = new Lancamentos.Api.BatimentoDoDespachanteV1(1, DateTimeOffset.UtcNow, 3, 1.5);
+
+        Assert.Equal(Campos(ExemploBatimento), Campos(batimento.Serializar()));
+    }
+
+    [Fact]
+    public void Consumidor_le_o_batimento_do_contrato_e_recusa_invalido()
+    {
+        var batimento = Consolidado.Api.BatimentoDoDespachanteV1.Ler(System.Text.Encoding.UTF8.GetBytes(ExemploBatimento));
+
+        Assert.NotNull(batimento);
+        Assert.Equal(3, batimento.OutboxPendentes);
+        Assert.Equal(1.5, batimento.OutboxIdadeMaisAntigaSegundos);
+        Assert.Null(Consolidado.Api.BatimentoDoDespachanteV1.Ler(
+            System.Text.Encoding.UTF8.GetBytes(ExemploBatimento.Replace("\"outboxPendentes\": 3", "\"outboxPendentes\": -1", StringComparison.Ordinal))));
+    }
+
     [Fact]
     public void Consumidor_ignora_campo_opcional_novo()
     {

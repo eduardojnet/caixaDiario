@@ -125,4 +125,39 @@ public sealed class FluxoCompletoTests(BancoLancamentosFixture bancoLancamentos,
         Assert.Contains("outbox publicar", doTraco);
         Assert.Contains("projetor aplicar", doTraco);
     }
+
+    /// <summary>
+    /// Criterio do cartao 43: com batimentos chegando, o saldo nao sai
+    /// defasado mesmo sem lancamentos novos; quando Lancamentos para, a falta
+    /// do batimento marca defasado, sem o Consolidado consultar Lancamentos.
+    /// </summary>
+    [Fact]
+    public async Task Falta_do_batimento_de_Lancamentos_marca_o_saldo_como_defasado()
+    {
+        await using var consolidado = new FabricaConsolidado(
+            bancoConsolidado.ConexaoAplicacao, BrokerDeTeste.Consolidado(_broker),
+            new Dictionary<string, string> { ["Consulta:LimiteDoBatimento"] = "00:00:02" });
+        using var clienteConsolidado = consolidado.CreateClient();
+        var lancamentos = new FabricaLancamentos(
+            bancoLancamentos.ConexaoAplicacao, BrokerDeTeste.Lancamentos(_broker),
+            new Dictionary<string, string> { ["Despacho:IntervaloDoBatimento"] = "00:00:00.300" });
+        using (lancamentos.CreateClient())
+        {
+            var rota = $"/v1/caixas/{Utilidades.NovoCaixa()}/consolidado/{Utilidades.Ontem:yyyy-MM-dd}";
+
+            async Task<bool> Defasado() =>
+                (await clienteConsolidado.GetFromJsonAsync<SaldoDiario>(rota, TestContext.Current.CancellationToken))!.Defasado;
+
+            // Projetor conectado e batimentos chegando.
+            await Utilidades.EsperarAsync(async () => !await Defasado(), TimeSpan.FromSeconds(30), "saldo em dia");
+
+            // Mais que o limite sem nenhum lancamento: so o batimento mantem o saldo em dia.
+            await Task.Delay(TimeSpan.FromSeconds(3), TestContext.Current.CancellationToken);
+            Assert.False(await Defasado());
+
+            // Lancamentos para: nenhum batimento novo.
+            await lancamentos.DisposeAsync();
+            await Utilidades.EsperarAsync(Defasado, TimeSpan.FromSeconds(15), "saldo marcado defasado sem batimento");
+        }
+    }
 }

@@ -20,7 +20,8 @@ public sealed record Broker(string Host, int Porta, string Usuario, string Senha
 }
 
 /// <summary>API Lancamentos real, em processo, contra o banco da fixture.</summary>
-public sealed class FabricaLancamentos(string conexao, Broker broker) : WebApplicationFactory<MarcadorLancamentosApi>
+public sealed class FabricaLancamentos(string conexao, Broker broker, IReadOnlyDictionary<string, string>? extras = null)
+    : WebApplicationFactory<MarcadorLancamentosApi>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -33,6 +34,10 @@ public sealed class FabricaLancamentos(string conexao, Broker broker) : WebAppli
         builder.UseSetting("Despacho:Intervalo", "00:00:00.200");
         builder.UseSetting("Despacho:EsperaMaxima", "00:00:01");
         AutenticacaoDeTeste.Configurar(builder);
+        foreach (var (chave, valor) in extras ?? new Dictionary<string, string>())
+        {
+            builder.UseSetting(chave, valor);
+        }
     }
 
     /// <summary>Cliente com token de todos os escopos; os testes de recusa o removem.</summary>
@@ -44,7 +49,8 @@ public sealed class FabricaLancamentos(string conexao, Broker broker) : WebAppli
 }
 
 /// <summary>API Consolidado real, em processo, com o projetor ligado ao broker.</summary>
-public sealed class FabricaConsolidado(string conexao, Broker broker) : WebApplicationFactory<MarcadorConsolidadoApi>
+public sealed class FabricaConsolidado(string conexao, Broker broker, IReadOnlyDictionary<string, string>? extras = null)
+    : WebApplicationFactory<MarcadorConsolidadoApi>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -56,6 +62,10 @@ public sealed class FabricaConsolidado(string conexao, Broker broker) : WebAppli
         builder.UseSetting("Broker:Senha", broker.Senha);
         builder.UseSetting("Consulta:DuracaoDoCache", "00:00:00.050");
         AutenticacaoDeTeste.Configurar(builder);
+        foreach (var (chave, valor) in extras ?? new Dictionary<string, string>())
+        {
+            builder.UseSetting(chave, valor);
+        }
     }
 
     protected override void ConfigureClient(HttpClient client)
