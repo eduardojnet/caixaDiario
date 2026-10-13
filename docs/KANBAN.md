@@ -71,7 +71,7 @@ _Vazia._
 
 ÂNCORA: enunciado (PDF), requisitos O1 a O9, RNF-01 e RNF-02.  
 SITUAÇÃO: concluído antes da abertura do quadro.  
-CRITÉRIO: documento de contexto existe no projeto do claude.ai, com decisão e conta de tempo.  
+CRITÉRIO: documento de contexto existe no projeto do instrucoes.md, com decisão e conta de tempo.  
 ENTREGA: documento de contexto (fora do repositório). Alternativa B (reaproveitar oficina e método do PacioliBank, peça nova para o domínio do comerciante). A e C rejeitadas com motivo.
 
 - [x] 01.1 Extrair os requisitos obrigatórios, diferenciais e RNF literais
@@ -98,7 +98,7 @@ ENTREGA (2026-10-12): GitHub eduardojnet/caixaDiario público, vazio, permissão
 
 ÂNCORA: L-01 (citação com números falsos), L-02 (ADR de tecnologia ausente), realocação de 55 min.  
 CRITÉRIO: arquivos gravados e listados na pasta local.  
-ENTREGA: Instruções (persona Arquiteto de Soluções Sênior, 16 regras, fila, portões G1 a G3), skill /proximo, settings.json, docs/ESTADO.md, .gitignore, .editorconfig. Cópia do Instruções no projeto do claude.ai.
+ENTREGA: Instruções (persona Arquiteto de Soluções Sênior, 16 regras, fila, portões G1 a G3), skill /proximo, settings.json, docs/ESTADO.md, .gitignore, .editorconfig. Cópia do Instruções no projeto do instrucoes.md.
 
 - [x] 03.1 Extrair a oficina real do PacioliBank (build, testes, compose, versões)
 - [x] 03.2 Redigir Instruções com persona, regras e fila
