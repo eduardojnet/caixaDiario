@@ -22,7 +22,10 @@ public sealed class Rnf01IsolamentoTests(BancoLancamentosIsoladoFixture banco) :
         // Porta reservada sem nenhum broker escutando. Nenhum Consolidado existe
         // neste teste: nem processo, nem banco.
         var porta = Utilidades.PortaLivre();
-        await using var api = new FabricaLancamentos(banco.ConexaoAplicacao, Broker.Ausente(porta));
+        // Batimento curto: garante que ele chegue a fila durante o teste, e que a
+        // contagem abaixo separe batimento de evento em toda execucao.
+        await using var api = new FabricaLancamentos(banco.ConexaoAplicacao, Broker.Ausente(porta),
+            new Dictionary<string, string> { ["Despacho:IntervaloDoBatimento"] = "00:00:00.300" });
         using var cliente = api.CreateClient();
         var caixa = Utilidades.NovoCaixa();
 
@@ -84,8 +87,18 @@ public sealed class Rnf01IsolamentoTests(BancoLancamentosIsoladoFixture banco) :
 
         await Utilidades.EsperarAsync(
             async () => await PendentesAsync(caixa) == 0, TimeSpan.FromSeconds(60), "outbox esvaziar com o broker de volta");
-        var naFila = await canal.MessageCountAsync("fila-de-teste", TestContext.Current.CancellationToken);
-        Assert.Equal(5u, naFila);
+        // Conta so os eventos de lancamento: o batimento do despachante (cartao
+        // 43) tambem chega a esta fila, em momento que depende do relogio.
+        var eventos = 0;
+        while (await canal.BasicGetAsync("fila-de-teste", autoAck: true, TestContext.Current.CancellationToken) is { } mensagem)
+        {
+            if (mensagem.BasicProperties.Type == "LancamentoRegistrado.v1")
+            {
+                eventos++;
+            }
+        }
+
+        Assert.Equal(5, eventos);
     }
 
     private async Task<long> PendentesAsync(string caixa)
