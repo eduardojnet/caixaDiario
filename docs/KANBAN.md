@@ -17,7 +17,7 @@ Espelho em texto do quadro mantido no TickTick (projeto `CaixaDiario`), que é a
 
 ## Faixas de numeração
 
-| Faixa | Significado | Bloco do plano de execução |
+| Faixa | Significado | Bloco do Instruções |
 |---|---|---|
 | 01 a 03 | Executado antes da abertura do quadro | Preparação |
 | 04 a 04 | Preparação em curso | Preparação |
@@ -71,7 +71,7 @@ _Vazia._
 
 ÂNCORA: enunciado (PDF), requisitos O1 a O9, RNF-01 e RNF-02.  
 SITUAÇÃO: concluído antes da abertura do quadro.  
-CRITÉRIO: documento de contexto existe na pasta de trabalho, fora do repositório, com decisão e conta de tempo.  
+CRITÉRIO: documento de contexto existe no projeto do instrucoes.md, com decisão e conta de tempo.  
 ENTREGA: documento de contexto (fora do repositório). Alternativa B (reaproveitar oficina e método do PacioliBank, peça nova para o domínio do comerciante). A e C rejeitadas com motivo.
 
 - [x] 01.1 Extrair os requisitos obrigatórios, diferenciais e RNF literais
@@ -92,32 +92,32 @@ ENTREGA (2026-10-12): GitHub eduardojnet/caixaDiario público, vazio, permissão
 - [x] 02.3 Testar leitura do PacioliBank
 - [x] 02.4 Testar leitura e escrita na pasta local
 
-### 03. Gerar as instruções de execução locais
+### 03. Gerar as Instruções de execução
 
 **Bloco:** Preparação · **Prioridade:** média · **Etiquetas:** documentacao, processo
 
 ÂNCORA: L-01 (citação com números falsos), L-02 (ADR de tecnologia ausente), realocação de 55 min.  
 CRITÉRIO: arquivos gravados e listados na pasta local.  
-ENTREGA: plano de execução local (persona Arquiteto de Soluções Sênior, 16 regras, fila, portões G1 a G3), procedimento /proximo, permissões de execução, docs/ESTADO.md, .gitignore, .editorconfig. Plano e permissões ficam fora do repositório.
+ENTREGA: Instruções (persona Arquiteto de Soluções Sênior, 16 regras, fila, portões G1 a G3), skill /proximo, settings.json, docs/ESTADO.md, .gitignore, .editorconfig. Cópia do Instruções no projeto do instrucoes.md.
 
 - [x] 03.1 Extrair a oficina real do PacioliBank (build, testes, compose, versões)
-- [x] 03.2 Redigir o plano de execução com persona, regras e fila
-- [x] 03.3 Redigir o procedimento /proximo
-- [x] 03.4 Redigir as permissões e negações de execução
+- [x] 03.2 Redigir Instruções com persona, regras e fila
+- [x] 03.3 Redigir a skill /proximo, procedimento único
+- [x] 03.4 Redigir settings.json com permissões e negações
 - [x] 03.5 Registrar o estado inicial em docs/ESTADO.md
 - [x] 03.6 Corrigir a citação do PacioliBank (94,11% e 86,96%)
 
-### 04. Instalar as instruções locais de execução
+### 04. Instalar as Instruções de execução locais
 
 **Bloco:** Preparação · **Prioridade:** alta · **Etiquetas:** infra, processo
 
 ÂNCORA: cartão 03. Os arquivos foram gerados numa pasta temporária, _instalar/, e precisavam ir para a pasta local de configuração.  
 SITUAÇÃO: pasta de configuração criada; primeiro mv falhou sem destino, nada perdido.  
-CRITÉRIO: permissões e procedimento /proximo na pasta local de configuração, carregados sem erro; /proximo disponível.  
+CRITÉRIO: settings.json e o procedimento /proximo na pasta local de configuração, carregados sem erro; /proximo disponível.  
 RISCO: sem isso, nenhum bloco roda pelo procedimento único.  
 TETO: fora dos 300 min (preparação).
 
-- [x] 04.1 Copiar as permissões de _instalar/ para a pasta de configuração
+- [x] 04.1 Copiar _instalar/settings.json para a pasta de configuração
 - [x] 04.2 Copiar o procedimento /proximo de _instalar/ para a pasta de configuração
 - [x] 04.3 Remover a pasta _instalar
 - [x] 04.4 Conferir que a configuração carrega sem erro
@@ -211,7 +211,7 @@ TETO: 10 min (Bloco 1).
 **Bloco:** Bloco 1 · **Prioridade:** alta · **Etiquetas:** spec, requisito-obrigatorio, desempenho
 
 ÂNCORA: requisito O2, RNF literais do enunciado.  
-SITUAÇÃO: sementes no plano de execução §7 (modelo, não fato).  
+SITUAÇÃO: sementes no Instruções §7 (modelo, não fato).  
 CRITÉRIO: RNF-01 a RNF-07 em docs/03-requisitos.md, cada um com métrica, meta e forma de medição; RNF-01 e RNF-02 presentes com meta e medição.  
 RISCO: RNF sem meta não é verificável; é o critério de conclusão do Bloco 1.  
 TETO: 15 min (Bloco 1).
@@ -228,7 +228,7 @@ TETO: 15 min (Bloco 1).
 **Bloco:** Bloco 1 · **Prioridade:** média · **Etiquetas:** analise, requisito-obrigatorio
 
 ÂNCORA: requisito O2 (refinamento), regra 4 (lacuna não vira suposição silenciosa).  
-SITUAÇÃO: cinco questões identificadas no plano de execução §7.  
+SITUAÇÃO: cinco questões identificadas no Instruções §7.  
 CRITÉRIO: QA-01 a QA-05 em docs/03-requisitos.md, cada uma com conduta provisória e ponto que muda se respondida. Commit 'docs: capacidades, dominios e requisitos'.  
 RISCO: suposição silenciosa é o erro que o avaliador procura em refinamento.  
 TETO: 10 min (Bloco 1).
@@ -245,7 +245,7 @@ TETO: 10 min (Bloco 1).
 **Bloco:** Bloco 2 · **Prioridade:** alta · **Etiquetas:** documentacao, arquitetura, requisito-obrigatorio
 
 ÂNCORA: requisito O4, RNF-01, RNF-02.  
-SITUAÇÃO: recomendação no plano de execução §6; decisão é de Eduardo no G2.  
+SITUAÇÃO: recomendação no Instruções §6; decisão é de Eduardo no G2.  
 CRITÉRIO: ADR em MADR com critérios datados antes das opções; contém literalmente a frase que separa volume de isolamento e nomeia o isolamento de falha como justificativa.  
 RISCO: sem a frase, a separação em dois serviços parece superdimensionamento.  
 TETO: 20 min (Bloco 2).
@@ -262,7 +262,7 @@ TETO: 20 min (Bloco 2).
 **Bloco:** Bloco 2 · **Prioridade:** alta · **Etiquetas:** documentacao, arquitetura, requisito-obrigatorio
 
 ÂNCORA: requisito O4, L-02 (plano original sem ADR de tecnologia).  
-SITUAÇÃO: tabela de transporte A, B, C no plano de execução §6.2. Recomendada: outbox + RabbitMQ.  
+SITUAÇÃO: tabela de transporte A, B, C no Instruções §6.2. Recomendada: outbox + RabbitMQ.  
 CRITÉRIO: cada tecnologia com alternativa rejeitada e gatilho; transporte decidido com trade-off; docs/adr/README.md com índice. Commit 'docs: ADR-0001 e ADR-0002'.  
 RISCO: sem ele, o requisito O4 fica atendido pela metade.  
 TETO: 15 min (Bloco 2).
