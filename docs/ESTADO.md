@@ -115,7 +115,7 @@ Conferidos contra o repositório publicado em 2026-10-12 21:37 (cartão 33): cad
 | Data | Evento |
 |---|---|
 | 2026-10-12 | Acessos verificados: repositório GitHub público e vazio com permissão de escrita; PacioliBank legível; pasta local com leitura e escrita |
-| 2026-10-12 | Instruções de execução geradas (CLAUDE.md local, skill `/proximo`) e estado inicial registrado |
+| 2026-10-12 | Instruções de execução geradas (plano de execução local, procedimento `/proximo`) e estado inicial registrado |
 | 2026-10-12 | Bloco 0, pré-voo: `dotnet --list-sdks` → 10.0.401; `docker version` → cliente e servidor 29.8.2; `docker compose version` → v5.6.0; `git --version` → 2.43.0; `gh` ausente, acesso ao GitHub verificado por SSH (`ssh -T git@github.com` autentica `eduardojnet`) e `git ls-remote` HTTPS no remoto vazio retorna sem erro |
 | 2026-10-12 | Bloco 0: remoto `origin` em HTTPS, conforme o plano; se o push HTTPS falhar por credencial após o G2, trocar para `git@github.com:eduardojnet/caixaDiario.git` (SSH verificado). Decisão reversível |
 | 2026-10-12 | Bloco 0: `Directory.Build.props` e `template.md` adaptados do PacioliBank, com comentários e IDs de requisito daquele projeto removidos (regra 13); `global.json` idêntico |

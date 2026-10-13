@@ -10,11 +10,6 @@ coverage*.xml
 coverage*.json
 .env
 
-# Instrucoes de execucao do Claude Code: locais, fora do repositorio publico
-# (mesma decisao do PacioliBank, 2026-10-05).
-CLAUDE.md
-.claude/
-
 # Relatorios gerados a cada execucao
 StrykerOutput/
 *.received.json

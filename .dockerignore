@@ -7,5 +7,3 @@
 .env
 docs/
 tests/
-CLAUDE.md
-.claude/
