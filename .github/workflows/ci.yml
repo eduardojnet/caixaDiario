@@ -1,0 +1,75 @@
+# Integracao continua: torna verificado a cada push o que antes era so
+# declarado no ESTADO.md: build sem avisos e testes verdes, inclusive o teste
+# de RNF-01 contra PostgreSQL e RabbitMQ reais.
+#
+# Acoes de terceiros fixadas por SHA de commit, com a versao em comentario:
+# tag pode ser movida, SHA nao. Mesmos SHAs ja usados no PacioliBank.
+
+name: CI
+
+on:
+  push:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build-test:
+    name: Build sem avisos e testes
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: 10.0.x
+
+      # NuGetAudit no Directory.Build.props: vulnerabilidade alta ou critica,
+      # transitivas inclusive, reprova o restore.
+      - name: Restaurar pacotes e auditar dependencias
+        run: dotnet restore
+
+      # TreatWarningsAsErrors e AnalysisMode=Recommended: um aviso reprova.
+      - name: Compilar (aviso e erro)
+        run: dotnet build --no-restore -c Release
+
+      # Dominio, arquitetura e integracao. A integracao sobe PostgreSQL e
+      # RabbitMQ reais pelo Testcontainers, com o Docker do proprio runner.
+      - name: Testes de dominio, arquitetura e integracao
+        id: testes
+        run: >-
+          dotnet test --no-build -c Release
+          --results-directory ${{ github.workspace }}/TestResults
+          --report-xunit-trx
+
+      # Cobertura de linha do dominio medida so pelos testes de dominio.
+      # Abaixo de 85%, reprova.
+      - name: Cobertura do dominio, limite de 85%
+        run: >-
+          dotnet test --project tests/CaixaDiario.Dominio.Tests --no-build -c Release
+          --results-directory ${{ github.workspace }}/TestResults/dominio
+          --coverlet
+          --coverlet-include "[CaixaDiario.Lancamentos.Dominio]*"
+          --coverlet-threshold 85
+          --coverlet-threshold-type line
+          --coverlet-output-format cobertura
+
+      - name: Publicar resultados e cobertura
+        if: always() && steps.testes.outcome != 'skipped'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: resultados-e-cobertura
+          path: TestResults
+          if-no-files-found: error
