@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>CaixaDiario.Lancamentos.Dominio</RootNamespace>
+    <AssemblyName>CaixaDiario.Lancamentos.Dominio</AssemblyName>
+  </PropertyGroup>
+
+  <!-- Sem PackageReference de proposito: o dominio nao conhece banco, HTTP nem
+       broker. Referenciar Npgsql daqui e erro de compilacao, nao achado de revisao. -->
+
+</Project>
