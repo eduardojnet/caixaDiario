@@ -59,12 +59,19 @@ builder.Services.AddRateLimiter(o =>
     }));
 });
 
+// OAuth2 client credentials (ADR-0004): consulta exige o escopo consolidado.leitura.
+const string EscopoLeitura = "consolidado.leitura";
+builder.Services.AdicionarAutenticacao(builder.Configuration, EscopoLeitura);
+
 builder.Services.AddHealthChecks()
     .AddCheck<VerificacaoBanco>("banco-consolidado", tags: ["pronto"]);
 
 var app = builder.Build();
 
+// Limitador antes da autenticacao: rajada sem token tambem e contida.
 app.UseRateLimiter();
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false });
 app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = c => c.Tags.Contains("pronto") });
 
@@ -88,6 +95,7 @@ app.MapGet("/v1/caixas/{caixaId}/consolidado/{data}", async (
         }).ConfigureAwait(false);
         return Results.Ok(saldo);
     })
-    .RequireRateLimiting("consulta");
+    .RequireRateLimiting("consulta")
+    .RequireAuthorization(EscopoLeitura);
 
 await app.RunAsync().ConfigureAwait(false);

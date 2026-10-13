@@ -82,6 +82,7 @@ public sealed class PublicadorRabbitMq(IOptions<OpcoesBroker> opcoes) : IAsyncDi
             Password = _opcoes.Senha,
             ClientProvidedName = "caixadiario-lancamentos",
             RequestedConnectionTimeout = TimeSpan.FromSeconds(3),
+            Ssl = TlsDoBroker.Criar(_opcoes),
             // A reconexao e conduzida pelo despachante, com espera crescente.
             AutomaticRecoveryEnabled = false,
         };

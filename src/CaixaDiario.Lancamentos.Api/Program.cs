@@ -40,6 +40,9 @@ if (!string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOIN
 }
 builder.Services.AddHostedService(sp => sp.GetRequiredService<DespachanteOutbox>());
 
+// OAuth2 client credentials (ADR-0004): escrita e leitura com escopos separados.
+builder.Services.AdicionarAutenticacao(builder.Configuration, EndpointsDeLancamentos.EscopoEscrita, EndpointsDeLancamentos.EscopoLeitura);
+
 // Prontidao verifica SO o proprio banco. Nunca o broker, nunca o Consolidado
 // (regra 1, RNF-01): nada fora da zona critica pode tirar este servico do ar.
 builder.Services.AddHealthChecks()
@@ -49,6 +52,10 @@ SqlMapper.AddTypeHandler(new ManipuladorDateOnly());
 
 var app = builder.Build();
 
+app.UseAuthentication();
+app.UseAuthorization();
+
+// Saude sem autenticacao: o orquestrador consulta sem token.
 app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false });
 app.MapHealthChecks("/health/ready", new HealthCheckOptions { Predicate = c => c.Tags.Contains("pronto") });
 app.MapEndpointsDeLancamentos();

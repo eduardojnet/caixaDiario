@@ -9,6 +9,8 @@
     <PackageReference Include="Dapper" Version="2.1.89" />
     <PackageReference Include="Npgsql" Version="10.0.3" />
     <PackageReference Include="RabbitMQ.Client" Version="7.2.2" />
+    <!-- Mesma linha do runtime ASP.NET Core 10.0.12 (ADR-0004). -->
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.12" />
     <PackageReference Include="Npgsql.OpenTelemetry" Version="10.0.3" />
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.19.1" />
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.19.1" />

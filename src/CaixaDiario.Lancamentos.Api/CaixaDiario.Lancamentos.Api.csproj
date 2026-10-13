@@ -13,6 +13,8 @@
     <PackageReference Include="RabbitMQ.Client" Version="7.2.2" />
     <!-- OpenTelemetry (ADR-0003): versoes ja verificadas no PacioliBank e
          conferidas como ultimas estaveis no nuget.org em 2026-10-12. -->
+    <!-- Mesma linha do runtime ASP.NET Core 10.0.12 (ADR-0004). -->
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.12" />
     <PackageReference Include="Npgsql.OpenTelemetry" Version="10.0.3" />
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.19.1" />
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.19.1" />

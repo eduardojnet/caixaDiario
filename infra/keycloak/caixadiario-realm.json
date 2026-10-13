@@ -1,0 +1,73 @@
+{
+  "realm": "caixadiario",
+  "enabled": true,
+  "accessTokenLifespan": 300,
+  "clientScopes": [
+    {
+      "name": "caixadiario-api",
+      "description": "Audiencia das APIs do CaixaDiario",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "false" },
+      "protocolMappers": [
+        {
+          "name": "audiencia-caixadiario-api",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "caixadiario-api",
+            "access.token.claim": "true",
+            "id.token.claim": "false"
+          }
+        }
+      ]
+    },
+    {
+      "name": "lancamentos.escrita",
+      "description": "Registrar lancamentos",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "true" }
+    },
+    {
+      "name": "lancamentos.leitura",
+      "description": "Listar lancamentos do dia",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "true" }
+    },
+    {
+      "name": "consolidado.leitura",
+      "description": "Consultar o saldo diario consolidado",
+      "protocol": "openid-connect",
+      "attributes": { "include.in.token.scope": "true" }
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "caixa-loja",
+      "name": "Sistema de caixa da loja: registra e consulta",
+      "enabled": true,
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${CAIXA_LOJA_SEGREDO:caixa-loja-segredo-local}",
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "protocol": "openid-connect",
+      "defaultClientScopes": ["caixadiario-api", "lancamentos.escrita", "lancamentos.leitura", "consolidado.leitura"],
+      "optionalClientScopes": []
+    },
+    {
+      "clientId": "contador",
+      "name": "Contador: so consulta",
+      "enabled": true,
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${CONTADOR_SEGREDO:contador-segredo-local}",
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "protocol": "openid-connect",
+      "defaultClientScopes": ["caixadiario-api", "lancamentos.leitura", "consolidado.leitura"],
+      "optionalClientScopes": []
+    }
+  ]
+}

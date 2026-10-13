@@ -63,6 +63,7 @@ public sealed partial class ProjetorRabbitMq(
             Password = _opcoes.Senha,
             ClientProvidedName = "caixadiario-consolidado",
             RequestedConnectionTimeout = TimeSpan.FromSeconds(3),
+            Ssl = TlsDoBroker.Criar(_opcoes),
             AutomaticRecoveryEnabled = false,
         };
 

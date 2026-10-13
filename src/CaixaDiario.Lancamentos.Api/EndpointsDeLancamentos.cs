@@ -17,13 +17,15 @@ public static class EndpointsDeLancamentos
 {
     public const string CabecalhoIdempotencia = "Idempotency-Key";
     public const string CabecalhoRepeticao = "Idempotency-Replayed";
+    public const string EscopoEscrita = "lancamentos.escrita";
+    public const string EscopoLeitura = "lancamentos.leitura";
     private const int TamanhoMaximoChave = 100;
 
     public static IEndpointRouteBuilder MapEndpointsDeLancamentos(this IEndpointRouteBuilder rotas)
     {
         var grupo = rotas.MapGroup("/v1/caixas/{caixaId}/lancamentos");
-        grupo.MapPost("/", RegistrarAsync);
-        grupo.MapGet("/", ListarAsync);
+        grupo.MapPost("/", RegistrarAsync).RequireAuthorization(EscopoEscrita);
+        grupo.MapGet("/", ListarAsync).RequireAuthorization(EscopoLeitura);
         return rotas;
     }
 

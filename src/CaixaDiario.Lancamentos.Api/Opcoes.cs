@@ -12,6 +12,12 @@ public sealed class OpcoesBroker
 
     public string Senha { get; set; } = "guest";
 
+    /// <summary>Conexao AMQP com TLS (ADR-0004). Ligado no compose, na porta 5671.</summary>
+    public bool Tls { get; set; }
+
+    /// <summary>Certificado da autoridade certificadora local que assina o do broker.</summary>
+    public string CaminhoCa { get; set; } = "/certs/ca.pem";
+
     /// <summary>Exchange fanout do contrato LancamentoRegistrado v1.</summary>
     public string Exchange { get; set; } = "caixadiario.lancamentos";
 }
