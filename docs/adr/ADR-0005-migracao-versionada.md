@@ -17,7 +17,7 @@ Fixados em 2026-10-12, antes das opções:
 1. **Mudança de esquema sem recriar o volume**, e sem reaplicar o que já foi aplicado.
 2. **Um migrador por serviço**, sem acoplar os bancos de Lancamentos e Consolidado (ADR-0001).
 3. **Privilégio mínimo preservado:** a credencial administrativa não fica com a API (RNF-06).
-4. **Os testes usam o mesmo caminho do compose** (regra 8).
+4. **Os testes usam o mesmo caminho do compose**, contra PostgreSQL real.
 5. **Domínio do autor e proporcionalidade:** pouco código novo.
 
 ## Opções consideradas
