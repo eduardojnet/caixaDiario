@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>CaixaDiario.Consolidado.Migracoes</RootNamespace>
+    <AssemblyName>CaixaDiario.Consolidado.Migracoes</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Mesma versao ja verificada no PacioliBank; exige Npgsql >= 10.0.1, e a
+         referencia explicita fixa o 10.0.3 usado no resto da solucao. -->
+    <PackageReference Include="dbup-postgresql" Version="7.0.1" />
+    <PackageReference Include="Npgsql" Version="10.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Os scripts ficam em db/consolidado/, onde quem revisa o esquema os procura,
+         e vao para a saida ao lado do executavel. -->
+    <None Include="..\..\db\consolidado\*.sql" Link="scripts\consolidado\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- Sem referencia a nenhum outro projeto: o migrador conhece o banco do
+       proprio servico, nao o dominio nem o outro servico. -->
+
+</Project>

@@ -1,7 +1,8 @@
 # Ambiente local completo: duas APIs, dois bancos e o broker.
 #   docker compose up --build -d
 #
-# Regra 1 visivel aqui: o servico lancamentos depende so do proprio banco.
+# Regra 1 visivel aqui: o servico lancamentos depende so do proprio banco, via
+# o proprio migrador.
 # Nao ha depends_on para broker, keycloak, consolidado, consolidado-db nem painel.
 
 name: caixadiario
@@ -14,9 +15,7 @@ services:
       POSTGRES_DB: lancamentos
       POSTGRES_USER: lancamentos_admin
       POSTGRES_PASSWORD: ${LANCAMENTOS_DB_PASSWORD:-lancamentos_admin_local}
-      APP_DB_PASSWORD: ${LANCAMENTOS_APP_PASSWORD:-lancamentos_app_local}
     volumes:
-      - ./db/lancamentos:/docker-entrypoint-initdb.d:ro
       - lancamentos-dados:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U lancamentos_admin -d lancamentos"]
@@ -24,14 +23,31 @@ services:
       timeout: 3s
       retries: 20
 
+  # Migracao versionada (DbUp, cartao 39): aplica os scripts de db/lancamentos
+  # que faltam, define a senha do papel da aplicacao e termina. Subir de novo
+  # sobre o mesmo volume nao reaplica nada. Unico processo com a credencial
+  # administrativa do banco.
+  lancamentos-migracoes:
+    build:
+      context: .
+      dockerfile: src/CaixaDiario.Lancamentos.Migracoes/Dockerfile
+    image: caixadiario/lancamentos-migracoes:local
+    depends_on:
+      lancamentos-db:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__Migrador: "Host=lancamentos-db;Database=lancamentos;Username=lancamentos_admin;Password=${LANCAMENTOS_DB_PASSWORD:-lancamentos_admin_local};GSS Encryption Mode=Disable"
+      APP_DB_PASSWORD: ${LANCAMENTOS_APP_PASSWORD:-lancamentos_app_local}
+    restart: "no"
+
   lancamentos:
     build:
       context: .
       dockerfile: src/CaixaDiario.Lancamentos.Api/Dockerfile
     image: caixadiario/lancamentos:local
     depends_on:
-      lancamentos-db:
-        condition: service_healthy
+      lancamentos-migracoes:
+        condition: service_completed_successfully
     volumes:
       # So a CA publica, para validar o certificado do broker.
       - certificados:/certs:ro
@@ -128,9 +144,7 @@ services:
       POSTGRES_DB: consolidado
       POSTGRES_USER: consolidado_admin
       POSTGRES_PASSWORD: ${CONSOLIDADO_DB_PASSWORD:-consolidado_admin_local}
-      APP_DB_PASSWORD: ${CONSOLIDADO_APP_PASSWORD:-consolidado_app_local}
     volumes:
-      - ./db/consolidado:/docker-entrypoint-initdb.d:ro
       - consolidado-dados:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U consolidado_admin -d consolidado"]
@@ -138,14 +152,27 @@ services:
       timeout: 3s
       retries: 20
 
+  consolidado-migracoes:
+    build:
+      context: .
+      dockerfile: src/CaixaDiario.Consolidado.Migracoes/Dockerfile
+    image: caixadiario/consolidado-migracoes:local
+    depends_on:
+      consolidado-db:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__Migrador: "Host=consolidado-db;Database=consolidado;Username=consolidado_admin;Password=${CONSOLIDADO_DB_PASSWORD:-consolidado_admin_local};GSS Encryption Mode=Disable"
+      APP_DB_PASSWORD: ${CONSOLIDADO_APP_PASSWORD:-consolidado_app_local}
+    restart: "no"
+
   consolidado:
     build:
       context: .
       dockerfile: src/CaixaDiario.Consolidado.Api/Dockerfile
     image: caixadiario/consolidado:local
     depends_on:
-      consolidado-db:
-        condition: service_healthy
+      consolidado-migracoes:
+        condition: service_completed_successfully
     volumes:
       - certificados:/certs:ro
     environment:

@@ -1,6 +1,6 @@
 -- Esquema do servico Lancamentos (ADR-0002).
--- Aplicado pelo docker-entrypoint-initdb.d no compose e pela fixture dos
--- testes de integracao: o mesmo arquivo nos dois lugares.
+-- Aplicado pelo migrador CaixaDiario.Lancamentos.Migracoes (DbUp), no compose
+-- e na fixture dos testes de integracao: o mesmo arquivo nos dois lugares.
 --
 -- As invariantes moram aqui, nao no codigo (regra 7):
 --   * idempotencia: chave unica (caixa_id, chave_idempotencia);
@@ -36,8 +36,8 @@ CREATE TABLE outbox (
 
 CREATE INDEX ix_outbox_pendentes ON outbox (id) WHERE publicado_em IS NULL;
 
--- Papel da aplicacao. Sem LOGIN aqui: a senha vem de variavel de ambiente,
--- aplicada por 0002_senha_aplicacao.sh no compose e pela fixture nos testes.
+-- Papel da aplicacao. Sem LOGIN aqui: a senha vem de variavel de ambiente e e
+-- aplicada pelo migrador a cada execucao.
 REVOKE ALL ON lancamentos, outbox FROM PUBLIC;
 CREATE ROLE lancamentos_app NOLOGIN;
 GRANT SELECT, INSERT ON lancamentos TO lancamentos_app;

@@ -1,7 +1,7 @@
 -- Esquema do servico Consolidado (ADR-0002).
 -- Modelo de leitura reconstruivel: tudo aqui deriva dos eventos
--- LancamentoRegistrado v1. Aplicado pelo docker-entrypoint-initdb.d no compose
--- e pela fixture dos testes de integracao.
+-- LancamentoRegistrado v1. Aplicado pelo migrador CaixaDiario.Consolidado.Migracoes
+-- (DbUp), no compose e na fixture dos testes de integracao.
 
 -- Idempotencia do projetor: um lancamento so e aplicado uma vez (RF-10).
 CREATE TABLE lancamentos_aplicados (
