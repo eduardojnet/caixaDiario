@@ -2,7 +2,7 @@
 #   docker compose up --build -d
 #
 # Regra 1 visivel aqui: o servico lancamentos depende so do proprio banco.
-# Nao ha depends_on para broker, consolidado, consolidado-db nem painel.
+# Nao ha depends_on para broker, keycloak, consolidado, consolidado-db nem painel.
 
 name: caixadiario
 
@@ -32,6 +32,9 @@ services:
     depends_on:
       lancamentos-db:
         condition: service_healthy
+    volumes:
+      # So a CA publica, para validar o certificado do broker.
+      - certificados:/certs:ro
     environment:
       ASPNETCORE_URLS: http://+:8080
       # Papel da aplicacao: so SELECT e INSERT em lancamentos (RNF-06).
@@ -39,8 +42,15 @@ services:
       # Npgsql tenta carregar libgssapi, ausente na imagem, e polui o log.
       ConnectionStrings__Lancamentos: "Host=lancamentos-db;Database=lancamentos;Username=lancamentos_app;Password=${LANCAMENTOS_APP_PASSWORD:-lancamentos_app_local};GSS Encryption Mode=Disable"
       Broker__Host: broker
-      Broker__Usuario: ${BROKER_USER:-caixadiario}
-      Broker__Senha: ${BROKER_PASSWORD:-caixadiario_local}
+      Broker__Porta: "5671"
+      Broker__Tls: "true"
+      Broker__Usuario: lancamentos
+      Broker__Senha: ${BROKER_LANCAMENTOS_PASSWORD:-lancamentos_broker_local}
+      # Validacao do token OAuth2: chaves buscadas no Keycloak pela rede interna,
+      # emissor como visto de fora. HTTP so no ambiente local.
+      Autenticacao__EnderecoDeMetadados: http://keycloak:8080/realms/caixadiario/.well-known/openid-configuration
+      Autenticacao__Emissor: http://localhost:8180/realms/caixadiario
+      Autenticacao__ExigirHttps: "false"
       # Telemetria por OTLP para o painel (ADR-0003). Exportacao assincrona:
       # painel fora do ar nao afeta o registro.
       OTEL_EXPORTER_OTLP_ENDPOINT: http://painel:18889
@@ -49,20 +59,68 @@ services:
     ports:
       - "8080:8080"
 
+  # Gera a CA local e o certificado do broker no primeiro "up" (ADR-0004).
+  # Nada disso e versionado: fica no volume "certificados".
+  certificados:
+    image: rabbitmq:4.1.8-management-alpine
+    entrypoint: ["sh", "/scripts/certificados.sh"]
+    volumes:
+      - ./infra/rabbitmq/certificados.sh:/scripts/certificados.sh:ro
+      - certificados:/certs
+    restart: "no"
+
+  # TLS obrigatorio (porta 5671, sem AMQP em texto claro) e uma credencial por
+  # servico, aplicada por permissoes.sh na subida (ADR-0004). O usuario
+  # administrador serve so a gerencia em :15672.
   broker:
     image: rabbitmq:4.1.8-management-alpine
+    entrypoint: ["sh", "/opt/caixadiario/entrypoint.sh"]
+    depends_on:
+      certificados:
+        condition: service_completed_successfully
     environment:
-      RABBITMQ_DEFAULT_USER: ${BROKER_USER:-caixadiario}
-      RABBITMQ_DEFAULT_PASS: ${BROKER_PASSWORD:-caixadiario_local}
+      RABBITMQ_DEFAULT_USER: ${BROKER_ADMIN_USER:-caixadiario}
+      RABBITMQ_DEFAULT_PASS: ${BROKER_ADMIN_PASSWORD:-caixadiario_local}
+      BROKER_LANCAMENTOS_PASSWORD: ${BROKER_LANCAMENTOS_PASSWORD:-lancamentos_broker_local}
+      BROKER_CONSOLIDADO_PASSWORD: ${BROKER_CONSOLIDADO_PASSWORD:-consolidado_broker_local}
     volumes:
+      - ./infra/rabbitmq/entrypoint.sh:/opt/caixadiario/entrypoint.sh:ro
+      - ./infra/rabbitmq/permissoes.sh:/opt/caixadiario/permissoes.sh:ro
+      - ./infra/rabbitmq/tls.conf:/etc/rabbitmq/conf.d/90-tls.conf:ro
+      - certificados:/certs:ro
       - broker-dados:/var/lib/rabbitmq
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      # Pronto so depois de aplicar as credenciais por servico.
+      test: ["CMD-SHELL", "test -f /tmp/configurado && rabbitmq-diagnostics -q ping"]
       interval: 5s
       timeout: 5s
-      retries: 20
+      retries: 30
     ports:
       - "15672:15672"
+
+  # Servidor de autorizacao OAuth2 (ADR-0004), so ambiente local: modo de
+  # desenvolvimento, HTTP, segredos padrao declarados no realm.
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.8.0
+    command: ["start-dev", "--import-realm", "--http-port=8080"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USER:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin_local}
+      # Emissor unico, visto de fora (curl) e de dentro (APIs).
+      KC_HOSTNAME: http://localhost:8180
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
+      KC_HEALTH_ENABLED: "true"
+      CAIXA_LOJA_SEGREDO: ${CAIXA_LOJA_SEGREDO:-caixa-loja-segredo-local}
+      CONTADOR_SEGREDO: ${CONTADOR_SEGREDO:-contador-segredo-local}
+    volumes:
+      - ./infra/keycloak/caixadiario-realm.json:/opt/keycloak/data/import/caixadiario-realm.json:ro
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000 && printf 'GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 && grep -q UP <&3"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+    ports:
+      - "8180:8080"
 
   consolidado-db:
     image: postgres:17-alpine
@@ -88,12 +146,19 @@ services:
     depends_on:
       consolidado-db:
         condition: service_healthy
+    volumes:
+      - certificados:/certs:ro
     environment:
       ASPNETCORE_URLS: http://+:8080
       ConnectionStrings__Consolidado: "Host=consolidado-db;Database=consolidado;Username=consolidado_app;Password=${CONSOLIDADO_APP_PASSWORD:-consolidado_app_local};GSS Encryption Mode=Disable"
       Broker__Host: broker
-      Broker__Usuario: ${BROKER_USER:-caixadiario}
-      Broker__Senha: ${BROKER_PASSWORD:-caixadiario_local}
+      Broker__Porta: "5671"
+      Broker__Tls: "true"
+      Broker__Usuario: consolidado
+      Broker__Senha: ${BROKER_CONSOLIDADO_PASSWORD:-consolidado_broker_local}
+      Autenticacao__EnderecoDeMetadados: http://keycloak:8080/realms/caixadiario/.well-known/openid-configuration
+      Autenticacao__Emissor: http://localhost:8180/realms/caixadiario
+      Autenticacao__ExigirHttps: "false"
       OTEL_EXPORTER_OTLP_ENDPOINT: http://painel:18889
       OTEL_SERVICE_NAME: consolidado
       OTEL_METRIC_EXPORT_INTERVAL: "10000"
@@ -114,6 +179,7 @@ services:
       - "18888:18888"
 
 volumes:
+  certificados:
   lancamentos-dados:
   consolidado-dados:
   broker-dados:
