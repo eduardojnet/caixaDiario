@@ -507,10 +507,10 @@ CRITÉRIO: seção própria e nomeada, separada de 'como rodar'.
 RISCO: o enunciado pede as duas coisas; uma só atende metade do item.  
 TETO: 8 min (Bloco 5).
 
-- [ ] 29.1 Problema do comerciante em três linhas
-- [ ] 29.2 Os dois serviços e por que dois (isolamento, não volume)
-- [ ] 29.3 Fluxo de um lançamento até o consolidado
-- [ ] 29.4 Link para o C2 e para os ADRs
+- [x] 29.1 Problema do comerciante em três linhas
+- [x] 29.2 Os dois serviços e por que dois (isolamento, não volume)
+- [x] 29.3 Fluxo de um lançamento até o consolidado
+- [x] 29.4 Link para o C2 e para os ADRs
 
 ### 30. Redigir a seção do README: como rodar localmente
 
@@ -521,12 +521,12 @@ CRITÉRIO: passos numerados, cada um com o resultado esperado; seções 'Se algo
 RISCO: passo sem resultado esperado vira pergunta do avaliador.  
 TETO: 12 min (Bloco 5).
 
-- [ ] 30.1 Pré-requisitos com versão
-- [ ] 30.2 Passos numerados com resultado esperado
-- [ ] 30.3 Exemplos de requisição
-- [ ] 30.4 Demonstração do RNF-01 em três comandos
-- [ ] 30.5 Se algo der errado; parar e começar do zero
-- [ ] 30.6 Como rodar os testes
+- [x] 30.1 Pré-requisitos com versão
+- [x] 30.2 Passos numerados com resultado esperado
+- [x] 30.3 Exemplos de requisição
+- [x] 30.4 Demonstração do RNF-01 em três comandos
+- [x] 30.5 Se algo der errado; parar e começar do zero
+- [x] 30.6 Como rodar os testes
 
 ### 31. Completar o README com índice, estado, citação e evoluções
 
@@ -537,11 +537,11 @@ CRITÉRIO: tabela 'Estado atual' coerente com ESTADO §4 e §5; citação do Pac
 RISCO: número desatualizado na citação é desmentido em um clique.  
 TETO: 8 min (Bloco 5).
 
-- [ ] 31.1 Índice da documentação
-- [ ] 31.2 Tabela Estado atual, implementado e especificado
-- [ ] 31.3 Reconferir os números do PacioliBank e inserir a citação
-- [ ] 31.4 O que faria com mais tempo
-- [ ] 31.5 Licença MIT
+- [x] 31.1 Índice da documentação
+- [x] 31.2 Tabela Estado atual, implementado e especificado
+- [x] 31.3 Reconferir os números do PacioliBank e inserir a citação
+- [x] 31.4 O que faria com mais tempo
+- [x] 31.5 Licença MIT
 
 ### 32. Verificar a entrega por clone limpo e publicar o push final
 

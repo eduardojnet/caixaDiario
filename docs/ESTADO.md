@@ -94,7 +94,7 @@
 | 2. Decisões | 40 | 21:04 | 21:06 | 2 | Concluído | Frase volume x isolamento no ADR-0001; G2 aprovado |
 | 3. Arquitetura Alvo | 35 | 21:07 | 21:11 | 4 | Concluído | C2 renderiza; sobrevivência de Lancamentos visível |
 | 4. Código e testes | 80 | 21:12 | 21:31 | 19 | Concluído | Compose sobe; POST 201; saldo confere; testes passam; POST 201 com Consolidado parado |
-| 5. README e fechamento | 40 | | | | Pendente | Clone limpo sobe só com o README |
+| 5. README e fechamento | 40 | 21:32 | | | Em andamento | Clone limpo sobe só com o README |
 | Reserva | 30 | | | | Disponível | Consumida apenas pelo Bloco 4 ou por revisão final |
 | **Total** | **300** | | | **30** | | |
 
@@ -141,3 +141,6 @@
 | 2026-10-12 | Bloco 4: logs JSON pelo provedor nativo (`AddJsonConsole`), sem Serilog: um pacote a menos, mesmo efeito para o escopo |
 | 2026-10-12 | Bloco 4: teste de RNF-01 com banco exclusivo; com banco compartilhado, o despachante do teste ponta a ponta esvaziava a outbox contada (achado na segunda execução) |
 | 2026-10-12 | Bloco 4: `GSS Encryption Mode=Disable` nas conexões do compose, mesma correção do PacioliBank, para o Npgsql não tentar carregar libgssapi |
+| 2026-10-12 | 2026-10-12 21:34 cartão 29 concluído: README §Como a aplicação funciona: resumo sem tecnologia em 5 linhas, o que muda para quem confere o caixa, dois serviços e frase volume x isolamento, fluxo em 4 passos, links para C2, sequência e ADRs |
+| 2026-10-12 | 2026-10-12 21:34 cartão 30 concluído: README §Como rodar localmente: pré-requisitos com versão, 7 passos com resultado esperado, RNF-01 em três comandos, recusas, Se algo der errado, Parar e começar do zero, testes e carga |
+| 2026-10-12 | 2026-10-12 21:34 cartão 31 concluído: README com índice, Estado atual coerente com ESTADO §4/§5, citação com números reconferidos no GitHub em 2026-10-12 (237 testes, 94,11%, 86,96%, estado de 2026-10-06), O que faria com mais tempo, LICENSE MIT |
