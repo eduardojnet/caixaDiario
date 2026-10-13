@@ -2,7 +2,7 @@
 
 **Documento vivo.** Atualizado ao fim de cada bloco de trabalho. Descreve o que existe, o que falta e o que está decidido, sem otimismo.
 
-**Última atualização:** 2026-10-12 (cartões 40, 41 e 38 do backlog concluídos)
+**Última atualização:** 2026-10-12 (cartão 34 do backlog concluído)
 **Build:** `dotnet build CaixaDiario.sln`: 0 avisos, 0 erros (`TreatWarningsAsErrors`, `AnalysisMode=Recommended`)
 **Testes:** 51 passando, 0 falhas (domínio 25, arquitetura 4, integração 22 com PostgreSQL e RabbitMQ reais via Testcontainers); carga k6 a 50 req/s com 0,00% de falha. CI verde no GitHub Actions; cobertura de linha do domínio 96,36%; mutação do domínio 98,21% (Stryker.NET 5.0.0), ambos com limite de 85%
 
@@ -73,6 +73,7 @@ Conferidos contra o repositório publicado em 2026-10-12 21:37 (cartão 33): cad
 - Observabilidade: métricas de outbox e de defasagem, traço OpenTelemetry (`docs/04-arquitetura-alvo.md` §4.7). Implementado só log JSON e verificações de saúde.
 - Segurança de integração: credencial de broker por serviço, TLS, OAuth2 client credentials na API (§4.8). Ambiente local usa um usuário só no broker e não autentica a API.
 - Integrações com maquininha e banco (C1).
+- Arquitetura de Transição (`docs/05-arquitetura-de-transicao.md`): fachada, adaptador do legado e adaptador reverso especificados sobre legado hipotético (H-01 a H-05); nenhuma peça implementada.
 - Migração versionada: esquemas aplicados por script de inicialização do contêiner (cartão 39 no backlog).
 
 ## 6. Questões abertas e lacunas
@@ -159,3 +160,5 @@ Conferidos contra o repositório publicado em 2026-10-12 21:37 (cartão 33): cad
 | 2026-10-12 | 2026-10-12 21:53 cartão 40 concluído: .github/workflows/ci.yml verde no push f8cdee6 (run 38329130875), ações fixadas por SHA |
 | 2026-10-12 | 2026-10-12 21:53 cartão 41 concluído: Stryker.NET 5.0.0: 98,21% (55 mortos, 1 sobrevivente), limite 85% no CI; job verde no push 2482861 (run 38329246089) |
 | 2026-10-12 | 2026-10-12 21:53 cartão 38 concluído: docs/diagrams/c3-componentes.md com os dois serviços, desenhado a partir das classes de src/; mermaid-cli renderiza (rc=0) |
+| 2026-10-12 | Cartão 34: Eduardo autorizou explicitamente ("34"), abrindo exceção à regra 15 só para a Arquitetura de Transição; a regra segue valendo para 35, 36 e 37 |
+| 2026-10-12 | 2026-10-12 21:59 cartão 34 concluído: docs/05-arquitetura-de-transicao.md com hipóteses H-01 a H-05, estrangulamento em 5 fases, critério de avanço C1 a C4 e caminho de volta por fase, diagrama de fases e de arquitetura transitória (mermaid-cli rc=0) |

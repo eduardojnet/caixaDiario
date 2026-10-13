@@ -8,12 +8,12 @@ Espelho em texto do quadro mantido no TickTick (projeto `CaixaDiario`), que é a
 
 | Coluna | Cartões | Números |
 |---|---|---|
-| Backlog/Ideias | 7 | 34 a 37, 39, 42, 43 |
+| Backlog/Ideias | 6 | 35 a 37, 39, 42, 43 |
 | A Fazer | 0 |  |
 | Em Andamento | 0 |  |
 | Em Revisão | 0 |  |
 | Bloqueado | 0 |  |
-| Concluído | 36 | 01 a 33, 38, 40, 41 |
+| Concluído | 37 | 01 a 34, 38, 40, 41 |
 
 ## Faixas de numeração
 
@@ -35,16 +35,6 @@ Espelho em texto do quadro mantido no TickTick (projeto `CaixaDiario`), que é a
 ---
 
 ## Backlog/Ideias
-
-### 34. Desenhar a Arquitetura de Transição a partir de legado
-
-**Bloco:** Backlog · **Prioridade:** baixa · **Etiquetas:** condicional, arquitetura
-
-ÂNCORA: requisito diferencial 'Arquitetura de Transição'.  
-POR QUE NÃO AGORA: cortado na decisão da alternativa B; o enunciado não descreve legado.  
-GATILHO: reserva com 20 min ou mais livres após o cartão 33, ou pedido do avaliador.  
-ESCOPO: 1. premissa de legado declarada como hipótese; 2. estrangulamento em fases; 3. diagrama de transição.  
-CRITÉRIO: docs/05-arquitetura-de-transicao.md com fases e critério de corte de cada fase.
 
 ### 35. Estimar o custo de infraestrutura e licenças
 
@@ -664,3 +654,14 @@ POR QUE NÃO AGORA: domínio deliberadamente fino neste desafio.
 GATILHO: cartão 40 concluído.  
 CRITÉRIO: escore de mutação medido e registrado, com limite no CI.
 ENTREGA (2026-10-12 21:53): Stryker.NET 5.0.0: 98,21% (55 mortos, 1 sobrevivente), limite 85% no CI; job verde no push 2482861 (run 38329246089).
+
+### 34. Desenhar a Arquitetura de Transição a partir de legado
+
+**Bloco:** Backlog · **Prioridade:** baixa · **Etiquetas:** condicional, arquitetura
+
+ÂNCORA: requisito diferencial 'Arquitetura de Transição'.  
+POR QUE NÃO AGORA: cortado na decisão da alternativa B; o enunciado não descreve legado.  
+GATILHO: reserva com 20 min ou mais livres após o cartão 33, ou pedido do avaliador.  
+ESCOPO: 1. premissa de legado declarada como hipótese; 2. estrangulamento em fases; 3. diagrama de transição.  
+CRITÉRIO: docs/05-arquitetura-de-transicao.md com fases e critério de corte de cada fase.
+ENTREGA (2026-10-12 21:59): docs/05-arquitetura-de-transicao.md com hipóteses H-01 a H-05, estrangulamento em 5 fases, critério de avanço C1 a C4 e caminho de volta por fase, diagrama de fases e de arquitetura transitória (mermaid-cli rc=0).
