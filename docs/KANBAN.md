@@ -8,12 +8,12 @@ Espelho em texto do quadro mantido no TickTick (projeto `CaixaDiario`), que é a
 
 | Coluna | Cartões | Números |
 |---|---|---|
-| Backlog/Ideias | 6 | 35 a 37, 39, 42, 43 |
+| Backlog/Ideias | 5 | 36, 37, 39, 42, 43 |
 | A Fazer | 0 |  |
 | Em Andamento | 0 |  |
 | Em Revisão | 0 |  |
 | Bloqueado | 0 |  |
-| Concluído | 37 | 01 a 34, 38, 40, 41 |
+| Concluído | 38 | 01 a 35, 38, 40, 41 |
 
 ## Faixas de numeração
 
@@ -35,16 +35,6 @@ Espelho em texto do quadro mantido no TickTick (projeto `CaixaDiario`), que é a
 ---
 
 ## Backlog/Ideias
-
-### 35. Estimar o custo de infraestrutura e licenças
-
-**Bloco:** Backlog · **Prioridade:** baixa · **Etiquetas:** condicional, infra
-
-ÂNCORA: requisito diferencial 'Estimativa de custos'.  
-POR QUE NÃO AGORA: cortado na alternativa B; preço de nuvem exige consulta datada.  
-GATILHO: reserva com 20 min ou mais livres após o cartão 33.  
-ESCOPO: 1. topologia mínima em nuvem; 2. preços consultados e datados [NVI] até conferir; 3. licenças (todas open source previstas).  
-CRITÉRIO: tabela de custo mensal com fonte e data de cada preço.
 
 ### 36. Implementar observabilidade completa com OpenTelemetry
 
@@ -665,3 +655,14 @@ GATILHO: reserva com 20 min ou mais livres após o cartão 33, ou pedido do aval
 ESCOPO: 1. premissa de legado declarada como hipótese; 2. estrangulamento em fases; 3. diagrama de transição.  
 CRITÉRIO: docs/05-arquitetura-de-transicao.md com fases e critério de corte de cada fase.
 ENTREGA (2026-10-12 21:59): docs/05-arquitetura-de-transicao.md com hipóteses H-01 a H-05, estrangulamento em 5 fases, critério de avanço C1 a C4 e caminho de volta por fase, diagrama de fases e de arquitetura transitória (mermaid-cli rc=0).
+
+### 35. Estimar o custo de infraestrutura e licenças
+
+**Bloco:** Backlog · **Prioridade:** baixa · **Etiquetas:** condicional, infra
+
+ÂNCORA: requisito diferencial 'Estimativa de custos'.  
+POR QUE NÃO AGORA: cortado na alternativa B; preço de nuvem exige consulta datada.  
+GATILHO: reserva com 20 min ou mais livres após o cartão 33.  
+ESCOPO: 1. topologia mínima em nuvem; 2. preços consultados e datados [NVI] até conferir; 3. licenças (todas open source previstas).  
+CRITÉRIO: tabela de custo mensal com fonte e data de cada preço.
+ENTREGA (2026-10-12 22:11): docs/06-estimativa-de-custos.md: opção A gerenciada ≈ US$ 195,63/mês, opção B VM única ≈ US$ 51,84/mês, cada preço com serviço, código de uso, versão do arquivo e data (AWS Price List Bulk API, sa-east-1, 2026-10-12); 13 licenças conferidas, nenhuma paga.

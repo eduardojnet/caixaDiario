@@ -221,6 +221,7 @@ Taxa de chegada constante de 50 req/s por 60 s, limite `http_req_failed < 5%`. R
 | [03 Requisitos](docs/03-requisitos.md) | RF, RNF com métrica, meta e medição, restrições, premissas, drivers, questões abertas |
 | [04 Arquitetura Alvo](docs/04-arquitetura-alvo.md) | Visões de negócio, operacional e técnica; degradação; observabilidade; segurança; trade-offs |
 | [05 Arquitetura de Transição](docs/05-arquitetura-de-transicao.md) | Substituição de um legado hipotético em cinco fases de estrangulamento, com critério de avanço e caminho de volta (especificado) |
+| [06 Estimativa de Custos](docs/06-estimativa-de-custos.md) | Custo mensal em nuvem (AWS São Paulo, preços datados): ≈ US$ 196 na topologia recomendada, ≈ US$ 52 numa VM única; licenças sem custo |
 | [ADRs](docs/adr/README.md) | ADR-0001 estilo arquitetural; ADR-0002 plataforma, armazenamento e integração |
 | [Diagramas](docs/diagrams/README.md) | C1 contexto, C2 contêineres, C3 componentes, sequência de registro e projeção |
 | [Contrato do evento](docs/contratos/lancamento-registrado.v1.md) | `LancamentoRegistrado` v1, com exemplo JSON e regra de versão |
@@ -244,6 +245,7 @@ Taxa de chegada constante de 50 req/s por 60 s, limite `http_req_failed < 5%`. R
 | Credencial de broker por serviço, TLS, autenticação na API | Especificado; ambiente local sem autenticação, declarado |
 | Integração contínua: build, testes, cobertura e mutação do domínio | Implementado: [GitHub Actions](.github/workflows/ci.yml), verde |
 | Arquitetura de transição a partir de legado | Especificado: [05](docs/05-arquitetura-de-transicao.md), sobre hipótese de legado declarada |
+| Estimativa de custo de infraestrutura e licenças | Especificado: [06](docs/06-estimativa-de-custos.md), preços da API pública da AWS em 2026-10-12 |
 | Integração com maquininha e banco | Especificado, fora do escopo |
 
 Detalhe e evidência de cada item em [docs/ESTADO.md](docs/ESTADO.md).
@@ -262,7 +264,6 @@ Cada item tem gatilho declarado; nenhum é necessário para os requisitos obriga
 
 | Evolução | Gatilho |
 |---|---|
-| Estimativa de custo de infraestrutura e licenças em nuvem, com preços datados (todas as dependências atuais são open source) | Decisão de implantação em nuvem |
 | Observabilidade completa: traço OpenTelemetry do `POST` à projeção, métricas de outbox e de defasagem, painel | Entrega aceita para a próxima etapa |
 | Autenticação: OAuth2 client credentials na API, credencial de broker por serviço (Lancamentos só publica, Consolidado só consome), TLS | Mais de um comerciante real (QA-04) |
 | Migração versionada (DbUp) no lugar dos scripts de inicialização | Primeira mudança de esquema depois da entrega |
