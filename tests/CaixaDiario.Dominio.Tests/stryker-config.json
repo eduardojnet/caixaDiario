@@ -1,0 +1,9 @@
+{
+  "stryker-config": {
+    "project": "CaixaDiario.Lancamentos.Dominio.csproj",
+    "test-projects": [ "CaixaDiario.Dominio.Tests.csproj" ],
+    "test-runner": "mtp",
+    "reporters": [ "progress", "cleartext", "html", "json" ],
+    "thresholds": { "high": 90, "low": 85, "break": 85 }
+  }
+}

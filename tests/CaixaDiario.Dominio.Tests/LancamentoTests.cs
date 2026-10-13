@@ -87,6 +87,47 @@ public class LancamentoTests
     }
 
     [Fact]
+    public void Caixa_no_limite_e_aceito_e_um_acima_e_recusado()
+    {
+        Assert.True(Criar(caixaId: new string('c', Lancamento.TamanhoMaximoCaixaId)).Sucesso);
+
+        var acima = Criar(caixaId: new string('c', Lancamento.TamanhoMaximoCaixaId + 1));
+        Assert.False(acima.Sucesso);
+        Assert.Contains(acima.Erros, e => e.Contains("caixaId deve ter de 1 a 64", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Descricao_no_limite_e_aceita_e_um_acima_e_recusada_com_mensagem()
+    {
+        Assert.True(Criar(descricao: new string('x', Lancamento.TamanhoMaximoDescricao)).Sucesso);
+
+        var acima = Criar(descricao: new string('x', Lancamento.TamanhoMaximoDescricao + 1));
+        Assert.Contains(acima.Erros, e => e.Contains("descricao deve ter no maximo 200", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Descricao_ausente_vira_texto_vazio()
+    {
+        Assert.Equal(string.Empty, Criar(descricao: null).Lancamento!.Descricao);
+    }
+
+    [Fact]
+    public void Valor_maximo_da_coluna_e_aceito_e_um_centavo_acima_e_recusado()
+    {
+        Assert.True(Criar(valor: 999_999_999_999.99m).Sucesso);
+
+        var acima = Criar(valor: 1_000_000_000_000.00m);
+        Assert.False(acima.Sucesso);
+        Assert.Contains(acima.Erros, e => e.Contains("excede o maximo", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Tipo_desconhecido_nao_tem_texto_de_contrato()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => ((TipoLancamento)99).ParaTexto());
+    }
+
+    [Fact]
     public void Todos_os_erros_sao_reportados_de_uma_vez()
     {
         var resultado = Criar(valor: -1m, data: Hoje.AddDays(1), caixaId: "");
