@@ -1,3 +1,4 @@
+using System.Diagnostics.Metrics;
 using System.Net;
 using CaixaDiario.Integracao.Tests.Infra;
 using Dapper;
@@ -37,6 +38,26 @@ public sealed class Rnf01IsolamentoTests(BancoLancamentosIsoladoFixture banco) :
         }
 
         Assert.Equal(5, await PendentesAsync(caixa));
+
+        // A metrica da outbox (ADR-0003) mostra o acumulo enquanto o broker esta fora.
+        long pendentesMedidos = 0;
+        using (var ouvinte = new MeterListener())
+        {
+            ouvinte.InstrumentPublished = (instrumento, l) =>
+            {
+                if (instrumento.Name == "caixadiario.outbox.pendentes")
+                {
+                    l.EnableMeasurementEvents(instrumento);
+                }
+            };
+            ouvinte.SetMeasurementEventCallback<long>((_, valor, _, _) => Interlocked.Exchange(ref pendentesMedidos, valor));
+            ouvinte.Start();
+            await Utilidades.EsperarAsync(() =>
+            {
+                ouvinte.RecordObservableInstruments();
+                return Task.FromResult(Interlocked.Read(ref pendentesMedidos) >= 5);
+            }, TimeSpan.FromSeconds(15), "metrica caixadiario.outbox.pendentes refletir o acumulo");
+        }
 
         // O broker volta, na porta que o despachante ja esta tentando.
         await using var broker = new RabbitMqBuilder("rabbitmq:4.1.8-management-alpine")

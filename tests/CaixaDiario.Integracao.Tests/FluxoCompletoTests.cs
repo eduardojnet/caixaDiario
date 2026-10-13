@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Json;
 using CaixaDiario.Consolidado.Api;
@@ -77,5 +79,49 @@ public sealed class FluxoCompletoTests(BancoLancamentosFixture bancoLancamentos,
         Assert.Equal(debitos, saldo.TotalDebitos);
         Assert.Equal(creditos - debitos, saldo.SaldoDoDia);
         Assert.NotNull(saldo.AtualizadoAte);
+    }
+
+    /// <summary>
+    /// Criterio do cartao 36 (ADR-0003): o traco iniciado no POST de
+    /// Lancamentos chega ao projetor do Consolidado, atravessando a outbox e o
+    /// broker, com o mesmo identificador de traco.
+    /// </summary>
+    [Fact]
+    public async Task Traco_do_POST_continua_no_despacho_e_na_projecao()
+    {
+        var capturadas = new ConcurrentBag<Activity>();
+        using var ouvinte = new ActivityListener
+        {
+            ShouldListenTo = _ => true,
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+            ActivityStopped = capturadas.Add,
+        };
+        ActivitySource.AddActivityListener(ouvinte);
+
+        var broker = new Broker(_broker.Hostname, _broker.GetMappedPublicPort(5672), "guest", "guest");
+        await using var consolidado = new FabricaConsolidado(bancoConsolidado.ConexaoAplicacao, broker);
+        using var clienteConsolidado = consolidado.CreateClient();
+        await using var lancamentos = new FabricaLancamentos(bancoLancamentos.ConexaoAplicacao, broker);
+        using var clienteLancamentos = lancamentos.CreateClient();
+
+        var traco = ActivityTraceId.CreateRandom();
+        using var requisicao = new HttpRequestMessage(HttpMethod.Post, $"/v1/caixas/{Utilidades.NovoCaixa()}/lancamentos")
+        {
+            Content = JsonContent.Create(new { tipo = "CREDITO", valor = 12.34m, dataDoFato = Utilidades.Ontem }),
+        };
+        requisicao.Headers.Add("Idempotency-Key", "traco-1");
+        requisicao.Headers.Add("traceparent", $"00-{traco}-{ActivitySpanId.CreateRandom()}-01");
+        using (var resposta = await clienteLancamentos.SendAsync(requisicao, TestContext.Current.CancellationToken))
+        {
+            Assert.Equal(HttpStatusCode.Created, resposta.StatusCode);
+        }
+
+        await Utilidades.EsperarAsync(
+            () => Task.FromResult(capturadas.Any(a => a.TraceId == traco && a.OperationName == "projetor aplicar")),
+            TimeSpan.FromSeconds(60), "projecao com o mesmo traco do POST");
+
+        var doTraco = capturadas.Where(a => a.TraceId == traco).Select(a => a.OperationName).ToList();
+        Assert.Contains("outbox publicar", doTraco);
+        Assert.Contains("projetor aplicar", doTraco);
     }
 }

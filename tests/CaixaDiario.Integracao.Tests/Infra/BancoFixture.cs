@@ -11,7 +11,7 @@ namespace CaixaDiario.Integracao.Tests.Infra;
 /// (regra 8). Banco em memoria passaria na implementacao ingenua: nao tem
 /// chave unica concorrente, nem papel, nem privilegio.
 /// </summary>
-public abstract class BancoFixture(string banco, string arquivoSql, string papelAplicacao) : IAsyncLifetime
+public abstract class BancoFixture(string banco, string pastaSql, string papelAplicacao) : IAsyncLifetime
 {
     private const string SenhaAplicacao = "senha_app_teste";
 
@@ -34,14 +34,19 @@ public abstract class BancoFixture(string banco, string arquivoSql, string papel
     {
         await _container.StartAsync().ConfigureAwait(false);
 
-        var script = await File.ReadAllTextAsync(Path.Combine(AppContext.BaseDirectory, "db", arquivoSql))
-            .ConfigureAwait(false);
+        // Todos os .sql da pasta do servico, em ordem de nome, como o initdb do compose.
+        var scripts = Directory.GetFiles(Path.Combine(AppContext.BaseDirectory, "db", pastaSql), "*.sql")
+            .Order(StringComparer.Ordinal);
 
         await using (var conexao = new NpgsqlConnection(ConexaoAdmin))
         {
             await conexao.OpenAsync().ConfigureAwait(false);
-            await using var esquema = new NpgsqlCommand(script, conexao);
-            await esquema.ExecuteNonQueryAsync().ConfigureAwait(false);
+            foreach (var arquivo in scripts)
+            {
+                var script = await File.ReadAllTextAsync(arquivo).ConfigureAwait(false);
+                await using var esquema = new NpgsqlCommand(script, conexao);
+                await esquema.ExecuteNonQueryAsync().ConfigureAwait(false);
+            }
 
             // Equivalente ao 0002_senha_aplicacao.sh do compose.
             await using var senha = new NpgsqlCommand(
@@ -64,14 +69,14 @@ public abstract class BancoFixture(string banco, string arquivoSql, string papel
 }
 
 public sealed class BancoLancamentosFixture()
-    : BancoFixture("lancamentos", Path.Combine("lancamentos", "0001_esquema.sql"), "lancamentos_app");
+    : BancoFixture("lancamentos", "lancamentos", "lancamentos_app");
 
 /// <summary>
 /// Banco exclusivo do teste de RNF-01: ele conta a outbox, e outro despachante
 /// ligado a um broker esvaziaria a outbox compartilhada no meio da contagem.
 /// </summary>
 public sealed class BancoLancamentosIsoladoFixture()
-    : BancoFixture("lancamentos", Path.Combine("lancamentos", "0001_esquema.sql"), "lancamentos_app");
+    : BancoFixture("lancamentos", "lancamentos", "lancamentos_app");
 
 public sealed class BancoConsolidadoFixture()
-    : BancoFixture("consolidado", Path.Combine("consolidado", "0001_esquema.sql"), "consolidado_app");
+    : BancoFixture("consolidado", "consolidado", "consolidado_app");
