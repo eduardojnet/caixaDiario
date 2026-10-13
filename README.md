@@ -174,7 +174,7 @@ curl -s -o /dev/null -w "contador registrando: %{http_code}\n" -X POST localhost
 curl -s -o /dev/null -w "contador consultando: %{http_code}\n" -H "Authorization: Bearer $CONTADOR" localhost:8081/v1/caixas/loja-centro/consolidado/$HOJE
 ```
 
-Resultado esperado: `sem token: 401`, `contador registrando: 403`, `contador consultando: 200`. No broker, cada serviço tem o próprio usuário: Lancamentos só publica, Consolidado só consome, e a conexão usa TLS na porta 5671 (a 5672, sem TLS, está fechada).
+Resultado esperado: `sem token: 401`, `contador registrando: 403`, `contador consultando: 200`. Se a consulta vier `000`, o Consolidado ainda está voltando da demonstração anterior: aguarde alguns segundos e repita a última linha. No broker, cada serviço tem o próprio usuário: Lancamentos só publica, Consolidado só consome, e a conexão usa TLS na porta 5671 (a 5672, sem TLS, está fechada).
 
 ### Exemplos de recusa
 
