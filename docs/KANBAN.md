@@ -288,9 +288,9 @@ COLUNA: vai para Bloqueado enquanto aguarda a resposta, com o bloqueio nomeado.
 TETO: 5 min (Bloco 2).
 
 - [x] 14.1 Apresentar a decisão de cada ADR em uma linha e o trade-off
-- [ ] 14.2 Registrar a aprovação no ESTADO §3
+- [x] 14.2 Registrar a aprovação no ESTADO §3
 - [x] 14.3 Conferir ausência da marca da empresa avaliadora nos arquivos
-- [ ] 14.4 git push origin main
+- [x] 14.4 git push origin main
 
 ### 15. Desenhar o C4 nível 1 de contexto
 

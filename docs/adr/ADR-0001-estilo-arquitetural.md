@@ -1,6 +1,6 @@
 # ADR-0001: Separar registro e consolidado em dois serviços com integração assíncrona
 
-- **Status:** Proposto
+- **Status:** Aceito em 2026-10-12 21:06 (portão G2)
 - **Data:** 2026-10-12
 - **Decisor:** Eduardo J. G. do Carmo (Arquiteto de Soluções)
 - **Consultados:** nenhum além do enunciado
@@ -34,7 +34,7 @@ Fixados em 2026-10-12, antes da comparação das opções, em ordem de peso:
 
 ## Decisão
 
-**A decisão proposta é separar o Controle de Lançamentos e o Consolidado Diário em dois serviços implantáveis de forma independente, cada um com seu banco, integrados de forma assíncrona por eventos, com dependência só no sentido Lançamentos → Consolidado.**
+**A solução separa o Controle de Lançamentos e o Consolidado Diário em dois serviços implantáveis de forma independente, cada um com seu banco, integrados de forma assíncrona por eventos, com dependência só no sentido Lançamentos → Consolidado.**
 
 > **O volume não justifica a separação; o isolamento de falha justifica.** 50 req/s, cerca de 4,3 milhões de requisições num dia de pico, cabem num único processo. O que um único processo não entrega é a garantia de que a falha do consolidado não alcança o registro.
 

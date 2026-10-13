@@ -1,6 +1,6 @@
 # ADR-0002: Adotar .NET 10, PostgreSQL 17 por serviço, Dapper e outbox com RabbitMQ
 
-- **Status:** Proposto
+- **Status:** Aceito em 2026-10-12 21:06 (portão G2)
 - **Data:** 2026-10-12
 - **Decisor:** Eduardo J. G. do Carmo (Arquiteto de Soluções)
 - **Consultados:** nenhum além do enunciado
@@ -24,7 +24,7 @@ Fixados em 2026-10-12, antes da comparação, em ordem de peso:
 
 ### 1. Plataforma: .NET 10 LTS com ASP.NET Core minimal API
 
-**A decisão proposta é .NET 10 LTS**, com minimal API e `BackgroundService` para despacho e projeção.
+**A solução utiliza .NET 10 LTS**, com minimal API e `BackgroundService` para despacho e projeção.
 
 - Atende os critérios 3 e 4: é a linguagem dominada pelo autor, suporte de longo prazo e imagem oficial de contêiner.
 - Minimal API reduz cerimônia para quatro rotas; `BackgroundService` dá despachante e consumidor no mesmo processo do serviço, sem um terceiro executável.
@@ -33,7 +33,7 @@ Fixados em 2026-10-12, antes da comparação, em ordem de peso:
 
 ### 2. Armazenamento: PostgreSQL 17, um banco por serviço
 
-**A decisão proposta é PostgreSQL 17, com uma instância para Lançamentos e outra para Consolidado.**
+**A solução utiliza PostgreSQL 17, com uma instância para Lançamentos e outra para Consolidado.**
 
 - Critério 2: chave única garante idempotência (RNF-07); privilégio por papel garante imutabilidade (RNF-06: o papel da aplicação recebe só `SELECT` e `INSERT` no registro); `numeric(14,2)` representa valor monetário sem erro de arredondamento.
 - Critério 1: um banco por serviço permite derrubar o consolidado **e o banco dele** sem tocar o banco do registro. Um banco compartilhado seria ponto de falha comum.
@@ -43,14 +43,14 @@ Fixados em 2026-10-12, antes da comparação, em ordem de peso:
 
 ### 3. Acesso a dados: Dapper com SQL explícito
 
-**A decisão proposta é Dapper sobre Npgsql.**
+**A solução utiliza Dapper sobre Npgsql.**
 
 - Critério 2: as invariantes estão no banco; o SQL explícito deixa visível o `INSERT` que dispara a chave única e a transação que une lançamento e outbox. Um ORM esconderia exatamente o que precisa ser revisado.
 - **Rejeitada: Entity Framework Core.** Produtivo para CRUD; aqui gera abstração sobre quatro comandos e induz a rastreamento de alteração num modelo que não tem alteração. *Voltaria* com modelo de domínio rico, muitas entidades e consultas compostas.
 
 ### 4. Transporte: outbox transacional com RabbitMQ
 
-**A decisão proposta é outbox transacional no banco de Lançamentos, despachante publicando em RabbitMQ, e projetor no Consolidado consumindo de uma fila durável.**
+**A solução utiliza outbox transacional no banco de Lançamentos, despachante publicando em RabbitMQ, e projetor no Consolidado consumindo de uma fila durável.**
 
 | Opção | Critério 1: caminho de falha ou carga para o registro | Outros efeitos |
 |---|---|---|
@@ -67,7 +67,7 @@ Fixados em 2026-10-12, antes da comparação, em ordem de peso:
 
 ### 5. Testes: xUnit v3, Testcontainers, NetArchTest e k6
 
-**A decisão proposta é:**
+**A solução utiliza:**
 
 - **Testcontainers** com PostgreSQL e RabbitMQ reais nos testes de integração. Critério 5: um repositório em memória passa na implementação ingênua de idempotência e imutabilidade; só o banco real recusa o `UPDATE` pelo privilégio e a duplicata pela chave única. *Rejeitado: banco em memória ou SQLite*, que não reproduzem papéis, privilégios nem a semântica de `numeric`. *Voltaria* para testes de unidade sem invariante de persistência, que já não usam banco.
 - **NetArchTest** para provar que Lançamentos não referencia Consolidado. *Rejeitado: revisão manual*, que não falha o build. *Voltaria* nunca como substituto; só como complemento.

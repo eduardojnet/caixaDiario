@@ -8,8 +8,8 @@ Comece pelo [ADR-0001](ADR-0001-estilo-arquitetural.md); o ADR-0002 depende dele
 
 | ADR | Decisão | Status | Dirigido por |
 |---|---|---|---|
-| [0001](ADR-0001-estilo-arquitetural.md) | Dois serviços com integração assíncrona, justificados por isolamento de falha, não por volume | Proposto | RNF-01, RNF-02, RE-01 |
-| [0002](ADR-0002-plataforma-armazenamento-e-integracao.md) | .NET 10 LTS, PostgreSQL 17 por serviço, Dapper, outbox com RabbitMQ, Testcontainers, NetArchTest, k6 | Proposto | RNF-01, RNF-06, RNF-07, RE-04 |
+| [0001](ADR-0001-estilo-arquitetural.md) | Dois serviços com integração assíncrona, justificados por isolamento de falha, não por volume | Aceito | RNF-01, RNF-02, RE-01 |
+| [0002](ADR-0002-plataforma-armazenamento-e-integracao.md) | .NET 10 LTS, PostgreSQL 17 por serviço, Dapper, outbox com RabbitMQ, Testcontainers, NetArchTest, k6 | Aceito | RNF-01, RNF-06, RNF-07, RE-04 |
 
 ## Regras deste diretório
 
