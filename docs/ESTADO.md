@@ -2,7 +2,7 @@
 
 **Documento vivo.** Atualizado ao fim de cada bloco de trabalho. Descreve o que existe, o que falta e o que está decidido, sem otimismo.
 
-**Última atualização:** 2026-10-12 (Bloco 5 concluído)
+**Última atualização:** 2026-10-12 (cartão 33, revisão final concluída)
 **Build:** `dotnet build CaixaDiario.sln`: 0 avisos, 0 erros (`TreatWarningsAsErrors`, `AnalysisMode=Recommended`)
 **Testes:** 46 passando, 0 falhas (domínio 20, arquitetura 4, integração 22 com PostgreSQL e RabbitMQ reais via Testcontainers); carga k6 a 50 req/s com 0,00% de falha
 
@@ -24,17 +24,19 @@
 
 ## 2. Requisitos obrigatórios do enunciado
 
-| # | Requisito | Estado |
-|---|---|---|
-| O1 | Mapeamento de domínios funcionais e capacidades de negócio | Atendido: `docs/01-capacidades-de-negocio.md`, `docs/02-dominios-funcionais.md` |
-| O2 | Refinamento de requisitos funcionais e não funcionais | Atendido: `docs/03-requisitos.md` (RF-01 a RF-10, RNF-01 a RNF-07, restrições, premissas, drivers, QA-01 a QA-05) |
-| O3 | Desenho da solução completo (Arquitetura Alvo) | Atendido: `docs/04-arquitetura-alvo.md`, `docs/diagrams/` (C1, C2, sequência), `docs/contratos/` |
-| O4 | Justificativa de ferramentas, tecnologias e tipo de arquitetura | Atendido: `docs/adr/ADR-0001`, `docs/adr/ADR-0002`, aceitos no G2 |
-| O5 | Linguagem dominada | Atendido: C# / .NET 10 (SDK 10.0.401) |
-| O6 | Testes | Atendido: `tests/` (46 testes verdes) e `tests/carga/consolidado-50rps.js` (executado) |
-| O7 | README: como funciona e como rodar localmente | Atendido: `README.md`, seções "Como a aplicação funciona" e "Como rodar localmente", verificado por clone limpo |
-| O8 | Repositório público no GitHub | Publicado: https://github.com/eduardojnet/caixaDiario, push a cada bloco desde o G2 |
-| O9 | Toda documentação no repositório | Atendido: `README.md` e `docs/` |
+Conferidos contra o repositório publicado em 2026-10-12 21:37 (cartão 33): cada link responde 200.
+
+| # | Requisito | Estado | Evidência publicada |
+|---|---|---|---|
+| O1 | Mapeamento de domínios funcionais e capacidades de negócio | Atendido | [01-capacidades-de-negocio.md](https://github.com/eduardojnet/caixaDiario/blob/main/docs/01-capacidades-de-negocio.md), [02-dominios-funcionais.md](https://github.com/eduardojnet/caixaDiario/blob/main/docs/02-dominios-funcionais.md) |
+| O2 | Refinamento de requisitos funcionais e não funcionais | Atendido | [03-requisitos.md](https://github.com/eduardojnet/caixaDiario/blob/main/docs/03-requisitos.md): RF-01 a RF-10, RNF-01 a RNF-07 com métrica, meta e medição, QA-01 a QA-05 |
+| O3 | Desenho da solução completo (Arquitetura Alvo) | Atendido | [04-arquitetura-alvo.md](https://github.com/eduardojnet/caixaDiario/blob/main/docs/04-arquitetura-alvo.md), [C2](https://github.com/eduardojnet/caixaDiario/blob/main/docs/diagrams/c2-conteineres.md), [contrato](https://github.com/eduardojnet/caixaDiario/blob/main/docs/contratos/lancamento-registrado.v1.md) |
+| O4 | Justificativa de ferramentas, tecnologias e tipo de arquitetura | Atendido | [ADR-0001](https://github.com/eduardojnet/caixaDiario/blob/main/docs/adr/ADR-0001-estilo-arquitetural.md), [ADR-0002](https://github.com/eduardojnet/caixaDiario/blob/main/docs/adr/ADR-0002-plataforma-armazenamento-e-integracao.md), aceitos no G2 |
+| O5 | Linguagem dominada | Atendido | C# / .NET 10: [src/](https://github.com/eduardojnet/caixaDiario/blob/main/src) |
+| O6 | Testes | Atendido | [tests/](https://github.com/eduardojnet/caixaDiario/blob/main/tests): 46 verdes, inclusive [RNF-01](https://github.com/eduardojnet/caixaDiario/blob/main/tests/CaixaDiario.Integracao.Tests/Rnf01IsolamentoTests.cs); carga k6 executada |
+| O7 | README: como funciona e como rodar localmente | Atendido | [README.md](https://github.com/eduardojnet/caixaDiario/blob/main/README.md), verificado por clone limpo |
+| O8 | Repositório público no GitHub | Atendido | https://github.com/eduardojnet/caixaDiario |
+| O9 | Toda documentação no repositório | Atendido | [docs/](https://github.com/eduardojnet/caixaDiario/blob/main/docs) e README |
 
 > O enunciado descarta o teste se algum requisito obrigatório não for minimamente atendido. Nenhum item desta tabela pode terminar como "Pendente".
 
@@ -95,8 +97,8 @@
 | 3. Arquitetura Alvo | 35 | 21:07 | 21:11 | 4 | Concluído | C2 renderiza; sobrevivência de Lancamentos visível |
 | 4. Código e testes | 80 | 21:12 | 21:31 | 19 | Concluído | Compose sobe; POST 201; saldo confere; testes passam; POST 201 com Consolidado parado |
 | 5. README e fechamento | 40 | 21:32 | 21:35 | 3 | Concluído | Clone limpo sobe só com o README |
-| Reserva | 30 | | | | Disponível | Consumida apenas pelo Bloco 4 ou por revisão final |
-| **Total** | **300** | | | **33** | | |
+| Reserva | 30 | 21:36 | 21:37 | 1 | Revisão final (cartão 33) | Consumida apenas pelo Bloco 4 ou por revisão final |
+| **Total** | **300** | | | **34** | | |
 
 ---
 
@@ -147,3 +149,5 @@
 | 2026-10-12 | 2026-10-12 21:35 cartão 32 concluído: clone limpo de github.com/eduardojnet/caixaDiario em pasta temporária: passos 1 a 7 e RNF-01 do README reproduzidos (ready 200/200, saldo 100,50, 201 com Consolidado parado, saldo 120,50); dotnet test no clone: 46/0; passo 6 corrigido (head -5 escondia Idempotency-Replayed) |
 | 2026-10-12 | Bloco 5: clone limpo revelou passo 6 do README sem o resultado prometido (`head -5` cortava o cabeçalho `Idempotency-Replayed`); trocado por `grep` dos cabeçalhos e do id |
 | 2026-10-12 | Bloco 5: item extra em "O que faria com mais tempo" (batimento do despachante, L-05) registrado como cartão 43 no backlog |
+| 2026-10-12 | Tempos da §7 são relógio de parede desta sessão, do primeiro ao último comando de cada bloco; a revisão de Eduardo fora da sessão não está contada |
+| 2026-10-12 | 2026-10-12 21:37 cartão 33 concluído: O1 a O9 Atendido no ESTADO §2 com link publicado (todos 200); marca da avaliadora: 0 arquivos versionados e 0 mensagens de commit; §7 com tempos reais; espelho KANBAN atualizado |

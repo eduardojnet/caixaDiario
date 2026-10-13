@@ -2,18 +2,18 @@
 
 Espelho em texto do quadro mantido no TickTick (projeto `CaixaDiario`), que é a **fonte** das atividades e da ordem. Em divergência, vale o quadro, e este espelho é corrigido. Política de colunas e anatomia do cartão seguem a convenção usada no PacioliBank: título com número de dois dígitos e verbo no infinitivo; âncora, situação, critério verificável e risco; limite de **um** cartão em Em Andamento; Concluído é append-only.
 
-**Data:** 2026-10-12 · **Cartões:** 42 · **Sincronizado com o TickTick em:** 2026-10-12, por leitura direta do quadro
+**Data:** 2026-10-12 · **Cartões:** 43 · **Sincronizado com o TickTick em:** 2026-10-12 21:37, cartões 04 a 33 movidos para Concluído e cartão 43 criado no Backlog
 
 ## Distribuição
 
 | Coluna | Cartões | Números |
 |---|---|---|
 | Backlog/Ideias | 10 | 34 a 43 |
-| A Fazer | 29 | 05 a 33 |
-| Em Andamento | 1 | 04 |
+| A Fazer | 0 |  |
+| Em Andamento | 0 |  |
 | Em Revisão | 0 |  |
 | Bloqueado | 0 |  |
-| Concluído | 3 | 01 a 03 |
+| Concluído | 33 | 01 a 33 |
 
 ## Faixas de numeração
 
@@ -133,6 +133,88 @@ CRITÉRIO: evento de batimento a cada N segundos; Consolidado marca `defasado` q
 ---
 
 ## A Fazer
+
+_Vazia._
+
+---
+
+## Em Andamento
+
+_Vazia._
+
+---
+
+## Em Revisão
+
+_Vazia._
+
+---
+
+## Bloqueado
+
+_Vazia._
+
+---
+
+## Concluído
+
+### 01. Analisar o enunciado e definir a estratégia de entrega
+
+**Bloco:** Preparação · **Prioridade:** média · **Etiquetas:** analise, processo
+
+ÂNCORA: enunciado (PDF), requisitos O1 a O9, RNF-01 e RNF-02.  
+SITUAÇÃO: concluído antes da abertura do quadro.  
+CRITÉRIO: documento de contexto existe no projeto do claude.ai, com decisão e conta de tempo.  
+ENTREGA: documento de contexto (fora do repositório). Alternativa B (reaproveitar oficina e método do PacioliBank, peça nova para o domínio do comerciante). A e C rejeitadas com motivo.
+
+- [x] 01.1 Extrair os requisitos obrigatórios, diferenciais e RNF literais
+- [x] 01.2 Comparar alternativas A, B e C pela conta de tempo
+- [x] 01.3 Definir cortes de profundidade sem remover item obrigatório
+- [x] 01.4 Registrar a fila de 5 blocos com teto
+
+### 02. Verificar os acessos antes de iniciar
+
+**Bloco:** Preparação · **Prioridade:** média · **Etiquetas:** infra, processo
+
+ÂNCORA: requisito O8 (repositório público).  
+CRITÉRIO: cada acesso testado com operação real, não presumido.  
+ENTREGA (2026-10-12): GitHub eduardojnet/caixaDiario público, vazio, permissão admin e push (push em dry-run). PacioliBank legível. Pasta local com leitura e escrita (gravado .gitignore). Shell remoto no computador indisponível: não bloqueia, o Claude Code local executa.
+
+- [x] 02.1 Ler o contexto e o PDF do projeto
+- [x] 02.2 Testar escrita no repositório GitHub
+- [x] 02.3 Testar leitura do PacioliBank
+- [x] 02.4 Testar leitura e escrita na pasta local
+
+### 03. Gerar as instruções de execução do Claude Code
+
+**Bloco:** Preparação · **Prioridade:** média · **Etiquetas:** documentacao, processo
+
+ÂNCORA: L-01 (citação com números falsos), L-02 (ADR de tecnologia ausente), realocação de 55 min.  
+CRITÉRIO: arquivos gravados e listados na pasta local.  
+ENTREGA: CLAUDE.md (persona Arquiteto de Soluções Sênior, 16 regras, fila, portões G1 a G3), skill /proximo, settings.json, docs/ESTADO.md, .gitignore, .editorconfig. Cópia do CLAUDE.md no projeto do claude.ai.
+
+- [x] 03.1 Extrair a oficina real do PacioliBank (build, testes, compose, versões)
+- [x] 03.2 Redigir CLAUDE.md com persona, regras e fila
+- [x] 03.3 Redigir a skill /proximo, procedimento único
+- [x] 03.4 Redigir settings.json com permissões e negações
+- [x] 03.5 Registrar o estado inicial em docs/ESTADO.md
+- [x] 03.6 Corrigir a citação do PacioliBank (94,11% e 86,96%)
+
+### 04. Instalar as instruções locais do Claude Code
+
+**Bloco:** Preparação · **Prioridade:** alta · **Etiquetas:** infra, processo
+
+ÂNCORA: cartão 03. A ponte remota não grava em .claude/, por isso os arquivos ficaram em _instalar/.  
+SITUAÇÃO: pastas .claude/skills/proximo criadas; primeiro mv falhou sem destino, nada perdido.  
+CRITÉRIO: ls -R .claude mostra settings.json e skills/proximo/SKILL.md; /status sem Settings Error; /proximo aparece na lista de comandos.  
+RISCO: sem isso, nenhum bloco roda pelo procedimento único.  
+TETO: fora dos 300 min (preparação).
+
+- [x] 04.1 Copiar _instalar/settings.json para .claude/
+- [x] 04.2 Copiar _instalar/SKILL.md para .claude/skills/proximo/
+- [x] 04.3 Remover a pasta _instalar
+- [x] 04.4 Abrir o Claude Code e conferir /status
+- [x] 04.5 Confirmar /proximo na lista de comandos
 
 ### 05. Verificar as ferramentas da máquina local (pré-voo)
 
@@ -575,86 +657,7 @@ CRITÉRIO: tabela O1 a O9 no ESTADO §2 sem nenhum 'Pendente', cada linha com li
 RISCO: um item ausente descarta o teste inteiro.  
 TETO: 5 min, mais a reserva de 30 min se disponível.
 
-- [ ] 33.1 Conferir O1 a O9 no repositório publicado
-- [ ] 33.2 Buscar a marca da empresa avaliadora em todos os arquivos
-- [ ] 33.3 Conferir ESTADO §7 com tempos reais
-- [ ] 33.4 Atualizar o espelho docs/KANBAN.md
-
----
-
-## Em Andamento
-
-### 04. Instalar as instruções locais do Claude Code
-
-**Bloco:** Preparação · **Prioridade:** alta · **Etiquetas:** infra, processo
-
-ÂNCORA: cartão 03. A ponte remota não grava em .claude/, por isso os arquivos ficaram em _instalar/.  
-SITUAÇÃO: pastas .claude/skills/proximo criadas; primeiro mv falhou sem destino, nada perdido.  
-CRITÉRIO: ls -R .claude mostra settings.json e skills/proximo/SKILL.md; /status sem Settings Error; /proximo aparece na lista de comandos.  
-RISCO: sem isso, nenhum bloco roda pelo procedimento único.  
-TETO: fora dos 300 min (preparação).
-
-- [x] 04.1 Copiar _instalar/settings.json para .claude/
-- [x] 04.2 Copiar _instalar/SKILL.md para .claude/skills/proximo/
-- [x] 04.3 Remover a pasta _instalar
-- [x] 04.4 Abrir o Claude Code e conferir /status
-- [x] 04.5 Confirmar /proximo na lista de comandos
-
----
-
-## Em Revisão
-
-_Vazia._
-
----
-
-## Bloqueado
-
-_Vazia._
-
----
-
-## Concluído
-
-### 01. Analisar o enunciado e definir a estratégia de entrega
-
-**Bloco:** Preparação · **Prioridade:** média · **Etiquetas:** analise, processo
-
-ÂNCORA: enunciado (PDF), requisitos O1 a O9, RNF-01 e RNF-02.  
-SITUAÇÃO: concluído antes da abertura do quadro.  
-CRITÉRIO: documento de contexto existe no projeto do claude.ai, com decisão e conta de tempo.  
-ENTREGA: documento de contexto (fora do repositório). Alternativa B (reaproveitar oficina e método do PacioliBank, peça nova para o domínio do comerciante). A e C rejeitadas com motivo.
-
-- [x] 01.1 Extrair os requisitos obrigatórios, diferenciais e RNF literais
-- [x] 01.2 Comparar alternativas A, B e C pela conta de tempo
-- [x] 01.3 Definir cortes de profundidade sem remover item obrigatório
-- [x] 01.4 Registrar a fila de 5 blocos com teto
-
-### 02. Verificar os acessos antes de iniciar
-
-**Bloco:** Preparação · **Prioridade:** média · **Etiquetas:** infra, processo
-
-ÂNCORA: requisito O8 (repositório público).  
-CRITÉRIO: cada acesso testado com operação real, não presumido.  
-ENTREGA (2026-10-12): GitHub eduardojnet/caixaDiario público, vazio, permissão admin e push (push em dry-run). PacioliBank legível. Pasta local com leitura e escrita (gravado .gitignore). Shell remoto no computador indisponível: não bloqueia, o Claude Code local executa.
-
-- [x] 02.1 Ler o contexto e o PDF do projeto
-- [x] 02.2 Testar escrita no repositório GitHub
-- [x] 02.3 Testar leitura do PacioliBank
-- [x] 02.4 Testar leitura e escrita na pasta local
-
-### 03. Gerar as instruções de execução do Claude Code
-
-**Bloco:** Preparação · **Prioridade:** média · **Etiquetas:** documentacao, processo
-
-ÂNCORA: L-01 (citação com números falsos), L-02 (ADR de tecnologia ausente), realocação de 55 min.  
-CRITÉRIO: arquivos gravados e listados na pasta local.  
-ENTREGA: CLAUDE.md (persona Arquiteto de Soluções Sênior, 16 regras, fila, portões G1 a G3), skill /proximo, settings.json, docs/ESTADO.md, .gitignore, .editorconfig. Cópia do CLAUDE.md no projeto do claude.ai.
-
-- [x] 03.1 Extrair a oficina real do PacioliBank (build, testes, compose, versões)
-- [x] 03.2 Redigir CLAUDE.md com persona, regras e fila
-- [x] 03.3 Redigir a skill /proximo, procedimento único
-- [x] 03.4 Redigir settings.json com permissões e negações
-- [x] 03.5 Registrar o estado inicial em docs/ESTADO.md
-- [x] 03.6 Corrigir a citação do PacioliBank (94,11% e 86,96%)
-
+- [x] 33.1 Conferir O1 a O9 no repositório publicado
+- [x] 33.2 Buscar a marca da empresa avaliadora em todos os arquivos
+- [x] 33.3 Conferir ESTADO §7 com tempos reais
+- [x] 33.4 Atualizar o espelho docs/KANBAN.md
