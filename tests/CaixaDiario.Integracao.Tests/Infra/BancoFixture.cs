@@ -7,13 +7,13 @@ using Testcontainers.PostgreSql;
 namespace CaixaDiario.Integracao.Tests.Infra;
 
 /// <summary>
-/// PostgreSQL real por execucao, com o MESMO script que o compose aplica
-/// (regra 8). Banco em memoria passaria na implementacao ingenua: nao tem
-/// chave unica concorrente, nem papel, nem privilegio.
+/// PostgreSQL real por execucao, preparado pelo MESMO migrador do compose
+/// (regra 8, cartao 39). Banco em memoria passaria na implementacao ingenua:
+/// nao tem chave unica concorrente, nem papel, nem privilegio.
 /// </summary>
-public abstract class BancoFixture(string banco, string pastaSql, string papelAplicacao) : IAsyncLifetime
+public abstract class BancoFixture(string banco) : IAsyncLifetime
 {
-    private const string SenhaAplicacao = "senha_app_teste";
+    protected const string SenhaAplicacao = "senha_app_teste";
 
     private readonly PostgreSqlContainer _container = new PostgreSqlBuilder("postgres:17-alpine")
         .WithDatabase(banco)
@@ -30,33 +30,18 @@ public abstract class BancoFixture(string banco, string pastaSql, string papelAp
     /// <summary>Conexao administrativa, so para inspecao nos testes.</summary>
     public string ConexaoAdmin => _container.GetConnectionString();
 
+    protected abstract string PapelDaAplicacao { get; }
+
+    /// <summary>Executa o migrador do servico: esquema e senha do papel.</summary>
+    protected abstract void Migrar();
+
     public async ValueTask InitializeAsync()
     {
         await _container.StartAsync().ConfigureAwait(false);
-
-        // Todos os .sql da pasta do servico, em ordem de nome, como o initdb do compose.
-        var scripts = Directory.GetFiles(Path.Combine(AppContext.BaseDirectory, "db", pastaSql), "*.sql")
-            .Order(StringComparer.Ordinal);
-
-        await using (var conexao = new NpgsqlConnection(ConexaoAdmin))
-        {
-            await conexao.OpenAsync().ConfigureAwait(false);
-            foreach (var arquivo in scripts)
-            {
-                var script = await File.ReadAllTextAsync(arquivo).ConfigureAwait(false);
-                await using var esquema = new NpgsqlCommand(script, conexao);
-                await esquema.ExecuteNonQueryAsync().ConfigureAwait(false);
-            }
-
-            // Equivalente ao 0002_senha_aplicacao.sh do compose.
-            await using var senha = new NpgsqlCommand(
-                $"ALTER ROLE {papelAplicacao} LOGIN PASSWORD '{SenhaAplicacao}'", conexao);
-            await senha.ExecuteNonQueryAsync().ConfigureAwait(false);
-        }
-
+        Migrar();
         _conexaoAplicacao = new NpgsqlConnectionStringBuilder(ConexaoAdmin)
         {
-            Username = papelAplicacao,
+            Username = PapelDaAplicacao,
             Password = SenhaAplicacao,
         }.ConnectionString;
     }
@@ -68,15 +53,40 @@ public abstract class BancoFixture(string banco, string pastaSql, string papelAp
     }
 }
 
-public sealed class BancoLancamentosFixture()
-    : BancoFixture("lancamentos", "lancamentos", "lancamentos_app");
+public class BancoLancamentosFixture() : BancoFixture("lancamentos")
+{
+    protected override string PapelDaAplicacao => Lancamentos.Migracoes.Migrador.PapelDaAplicacao;
+
+    protected override void Migrar()
+    {
+        var resultado = Lancamentos.Migracoes.Migrador.Aplicar(ConexaoAdmin);
+        if (!resultado.Sucesso)
+        {
+            throw new InvalidOperationException("Migracao de Lancamentos falhou.", resultado.Erro);
+        }
+
+        Lancamentos.Migracoes.Migrador.DefinirSenhaDaAplicacao(ConexaoAdmin, SenhaAplicacao);
+    }
+}
 
 /// <summary>
 /// Banco exclusivo do teste de RNF-01: ele conta a outbox, e outro despachante
 /// ligado a um broker esvaziaria a outbox compartilhada no meio da contagem.
 /// </summary>
-public sealed class BancoLancamentosIsoladoFixture()
-    : BancoFixture("lancamentos", "lancamentos", "lancamentos_app");
+public sealed class BancoLancamentosIsoladoFixture : BancoLancamentosFixture;
 
-public sealed class BancoConsolidadoFixture()
-    : BancoFixture("consolidado", "consolidado", "consolidado_app");
+public sealed class BancoConsolidadoFixture() : BancoFixture("consolidado")
+{
+    protected override string PapelDaAplicacao => Consolidado.Migracoes.Migrador.PapelDaAplicacao;
+
+    protected override void Migrar()
+    {
+        var resultado = Consolidado.Migracoes.Migrador.Aplicar(ConexaoAdmin);
+        if (!resultado.Sucesso)
+        {
+            throw new InvalidOperationException("Migracao de Consolidado falhou.", resultado.Erro);
+        }
+
+        Consolidado.Migracoes.Migrador.DefinirSenhaDaAplicacao(ConexaoAdmin, SenhaAplicacao);
+    }
+}

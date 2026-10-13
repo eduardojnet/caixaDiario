@@ -19,6 +19,7 @@
     <ProjectReference Include="..\..\src\CaixaDiario.Lancamentos.Dominio\CaixaDiario.Lancamentos.Dominio.csproj" />
     <ProjectReference Include="..\..\src\CaixaDiario.Lancamentos.Api\CaixaDiario.Lancamentos.Api.csproj" />
     <ProjectReference Include="..\..\src\CaixaDiario.Consolidado.Api\CaixaDiario.Consolidado.Api.csproj" />
+    <ProjectReference Include="..\..\src\CaixaDiario.Lancamentos.Migracoes\CaixaDiario.Lancamentos.Migracoes.csproj" />
   </ItemGroup>
 
   <ItemGroup>

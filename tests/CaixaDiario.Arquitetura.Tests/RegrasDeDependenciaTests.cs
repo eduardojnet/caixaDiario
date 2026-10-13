@@ -17,6 +17,7 @@ public class RegrasDeDependenciaTests
     private static readonly Assembly LancamentosDominio = typeof(Lancamento).Assembly;
     private static readonly Assembly LancamentosApi = typeof(MarcadorLancamentosApi).Assembly;
     private static readonly Assembly ConsolidadoApi = typeof(MarcadorConsolidadoApi).Assembly;
+    private static readonly Assembly LancamentosMigracoes = typeof(CaixaDiario.Lancamentos.Migracoes.Migrador).Assembly;
 
     private static void Aprovar(TestResult resultado, string regra) =>
         Assert.True(
@@ -26,7 +27,7 @@ public class RegrasDeDependenciaTests
     [Fact]
     public void Nenhum_tipo_de_Lancamentos_referencia_Consolidado()
     {
-        foreach (var assembly in new[] { LancamentosDominio, LancamentosApi })
+        foreach (var assembly in new[] { LancamentosDominio, LancamentosApi, LancamentosMigracoes })
         {
             var resultado = Types.InAssembly(assembly)
                 .ShouldNot()
@@ -40,7 +41,7 @@ public class RegrasDeDependenciaTests
     [Fact]
     public void Assemblies_de_Lancamentos_nao_referenciam_assembly_do_Consolidado()
     {
-        foreach (var assembly in new[] { LancamentosDominio, LancamentosApi })
+        foreach (var assembly in new[] { LancamentosDominio, LancamentosApi, LancamentosMigracoes })
         {
             var referencias = assembly.GetReferencedAssemblies().Select(r => r.Name);
 

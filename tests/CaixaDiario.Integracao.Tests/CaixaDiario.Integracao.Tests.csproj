@@ -23,11 +23,13 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\CaixaDiario.Lancamentos.Api\CaixaDiario.Lancamentos.Api.csproj" />
     <ProjectReference Include="..\..\src\CaixaDiario.Consolidado.Api\CaixaDiario.Consolidado.Api.csproj" />
+    <!-- O mesmo migrador do compose prepara o banco dos testes. -->
+    <ProjectReference Include="..\..\src\CaixaDiario.Lancamentos.Migracoes\CaixaDiario.Lancamentos.Migracoes.csproj" />
+    <ProjectReference Include="..\..\src\CaixaDiario.Consolidado.Migracoes\CaixaDiario.Consolidado.Migracoes.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Os mesmos scripts que o compose aplica, e o exemplo versionado do contrato. -->
-    <None Include="..\..\db\**\*.sql" LinkBase="db" CopyToOutputDirectory="PreserveNewest" />
+    <!-- O exemplo versionado do contrato e o script de permissoes do broker. -->
     <None Include="..\..\docs\contratos\*.json" LinkBase="contratos" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\infra\rabbitmq\permissoes.sh" LinkBase="infra" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
