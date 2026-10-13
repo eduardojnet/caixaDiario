@@ -54,12 +54,12 @@ Diagrama de contêineres: [C2](docs/diagrams/c2-conteineres.md). Sequência comp
 
 | Ferramenta | Versão verificada | Para quê |
 |---|---|---|
-| Docker Engine | 29.8.2 | Rodar os cinco contêineres |
+| Docker Engine | 29.8.2 | Rodar os seis contêineres |
 | Docker Compose | v5.6.0 (plugin `docker compose`) | Subir o ambiente |
 | curl | qualquer | Exemplos de requisição |
 | .NET SDK | 10.0.401 | **Só** para rodar os testes; a aplicação roda sem ele |
 
-As portas `8080`, `8081` e `15672` precisam estar livres. Nenhuma senha precisa ser configurada: o compose usa padrões locais. Para trocá-las, copie `.env.example` para `.env`.
+As portas `8080`, `8081`, `15672` e `18888` precisam estar livres. Nenhuma senha precisa ser configurada: o compose usa padrões locais. Para trocá-las, copie `.env.example` para `.env`.
 
 ### Passos
 
@@ -78,7 +78,7 @@ Resultado esperado: pasta `caixaDiario` com `docker-compose.yml` na raiz.
 docker compose up --build -d
 ```
 
-Resultado esperado: na primeira vez, as imagens são construídas (alguns minutos) e o comando termina com os cinco contêineres `Started` ou `Healthy`. Confira com `docker compose ps`: `broker`, `lancamentos-db` e `consolidado-db` aparecem `(healthy)`; `lancamentos` e `consolidado`, `Up`.
+Resultado esperado: na primeira vez, as imagens são construídas (alguns minutos) e o comando termina com os seis contêineres `Started` ou `Healthy`. Confira com `docker compose ps`: `broker`, `lancamentos-db` e `consolidado-db` aparecem `(healthy)`; `lancamentos`, `consolidado` e `painel`, `Up`.
 
 **3. Conferir que as duas APIs estão prontas.**
 
@@ -162,11 +162,26 @@ Resultado esperado: o segundo comando imprime `201`. Depois do terceiro, em pouc
 
 A gerência do RabbitMQ fica em http://localhost:15672 (usuário `caixadiario`, senha `caixadiario_local`, só no ambiente local).
 
+### Ver o traço de um lançamento no painel
+
+O painel de observabilidade fica em http://localhost:18888 (sem login, só no ambiente local). Envie um lançamento com um identificador de traço conhecido:
+
+```bash
+TRACO=$(openssl rand -hex 16)
+curl -s -o /dev/null -w "%{http_code}\n" -X POST localhost:8080/v1/caixas/loja-centro/lancamentos \
+  -H 'Content-Type: application/json' -H 'Idempotency-Key: traco-001' \
+  -H "traceparent: 00-$TRACO-$(openssl rand -hex 8)-01" \
+  -d "{\"tipo\":\"CREDITO\",\"valor\":10,\"dataDoFato\":\"$(TZ=America/Sao_Paulo date +%F)\"}"
+echo "http://localhost:18888/traces/detail/$TRACO"
+```
+
+Resultado esperado: `201` e um endereço; aberto no navegador, mostra um traço só, com `POST` e `outbox publicar` no serviço `lancamentos` e `projetor aplicar` no `consolidado`, mais os comandos do PostgreSQL. Em **Metrics**, as métricas `caixadiario.*`: outbox pendente, defasagem e fila do projetor, eventos aplicados.
+
 ### Se algo der errado
 
 | Sintoma | Causa provável | O que fazer |
 |---|---|---|
-| `Bind for 0.0.0.0:8080 failed: port is already allocated` | Outra aplicação na porta | Pare a outra aplicação, ou troque a porta da esquerda em `ports:` no `docker-compose.yml` |
+| `Bind for 0.0.0.0:8080 failed: port is already allocated` (ou 8081, 15672, 18888) | Outra aplicação na porta | Pare a outra aplicação, ou troque a porta da esquerda em `ports:` no `docker-compose.yml` |
 | `curl` responde `000` logo após subir | API ainda iniciando | Aguarde alguns segundos e repita; `docker compose logs lancamentos` mostra a subida |
 | `POST` responde `400` com "dataDoFato nao pode ser futura" | Data calculada em outro fuso | Use `TZ=America/Sao_Paulo date +%F`, como nos exemplos |
 | Saldo não aparece | Projeção ainda não aplicada, ou Consolidado parado | `docker compose ps`; `docker compose logs consolidado`; a resposta traz `defasado: true` se o projetor estiver sem broker |
@@ -186,7 +201,7 @@ Depois de `down -v`, o passo 2 recria tudo, inclusive os esquemas.
 ## Testes
 
 ```bash
-dotnet test                 # 51 testes, sem erro e sem aviso
+dotnet test                 # 52 testes, sem erro e sem aviso
 ```
 
 Pré-requisitos: .NET SDK 10 e **Docker em execução**. Os testes de integração sobem PostgreSQL e RabbitMQ reais (Testcontainers) e aplicam os mesmos scripts de esquema que o compose usa.
@@ -195,7 +210,7 @@ Pré-requisitos: .NET SDK 10 e **Docker em execução**. Os testes de integraç�
 |---|---|---|
 | `CaixaDiario.Dominio.Tests` | 25 | Validação do lançamento: valor positivo com duas casas, limites de tamanho e de valor, tipo, data futura recusada, regra do estorno |
 | `CaixaDiario.Arquitetura.Tests` | 4 | NetArchTest: nenhum tipo de Lancamentos referencia Consolidado; sem assembly compartilhado; domínio sem infraestrutura |
-| `CaixaDiario.Integracao.Tests` | 22 | **RNF-01** (Lancamentos sem Consolidado e sem broker responde `201`, a outbox acumula e esvazia quando o broker volta), idempotência sequencial e com 10 envios simultâneos, estorno, imutabilidade por privilégio do banco, projetor idempotente, reconciliação ponta a ponta, contrato do evento nos dois lados |
+| `CaixaDiario.Integracao.Tests` | 23 | **RNF-01** (Lancamentos sem Consolidado e sem broker responde `201`, a outbox acumula, a métrica mostra o acúmulo, e a outbox esvazia quando o broker volta), traço único do `POST` à projeção, idempotência sequencial e com 10 envios simultâneos, estorno, imutabilidade por privilégio do banco, projetor idempotente, reconciliação ponta a ponta, contrato do evento nos dois lados |
 
 **Por que banco real.** Idempotência sob envio simultâneo depende da chave única; imutabilidade depende de privilégio. Um repositório em memória passaria na implementação ingênua.
 
@@ -241,7 +256,7 @@ Taxa de chegada constante de 50 req/s por 60 s, limite `http_req_failed < 5%`. R
 | RNF-02/RNF-03: 50 req/s com até 5% de perda | Medido: 0,00% de falha |
 | RNF-04 consistência, RNF-06 imutabilidade, RNF-07 idempotência | Implementado, com testes contra banco real |
 | RNF-05: defasagem até 5 s | Marca implementada; meta proposta, não medida com instrumento `[NVI]` |
-| Métricas e traço distribuído (OpenTelemetry) | Especificado; implementado só log JSON e verificações de saúde |
+| Traço distribuído, métricas e logs (OpenTelemetry) com painel local | Implementado ([ADR-0003](docs/adr/ADR-0003-observabilidade.md)); traço do `POST` à projeção testado |
 | Credencial de broker por serviço, TLS, autenticação na API | Especificado; ambiente local sem autenticação, declarado |
 | Integração contínua: build, testes, cobertura e mutação do domínio | Implementado: [GitHub Actions](.github/workflows/ci.yml), verde |
 | Arquitetura de transição a partir de legado | Especificado: [05](docs/05-arquitetura-de-transicao.md), sobre hipótese de legado declarada |
@@ -264,7 +279,6 @@ Cada item tem gatilho declarado; nenhum é necessário para os requisitos obriga
 
 | Evolução | Gatilho |
 |---|---|
-| Observabilidade completa: traço OpenTelemetry do `POST` à projeção, métricas de outbox e de defasagem, painel | Entrega aceita para a próxima etapa |
 | Autenticação: OAuth2 client credentials na API, credencial de broker por serviço (Lancamentos só publica, Consolidado só consome), TLS | Mais de um comerciante real (QA-04) |
 | Migração versionada (DbUp) no lugar dos scripts de inicialização | Primeira mudança de esquema depois da entrega |
 | Saldo acumulado de fechamento, além do resultado do dia | Resposta da QA-01 indicando acumulado |

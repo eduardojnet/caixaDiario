@@ -8,12 +8,12 @@ Espelho em texto do quadro mantido no TickTick (projeto `CaixaDiario`), que é a
 
 | Coluna | Cartões | Números |
 |---|---|---|
-| Backlog/Ideias | 5 | 36, 37, 39, 42, 43 |
+| Backlog/Ideias | 4 | 37, 39, 42, 43 |
 | A Fazer | 0 |  |
 | Em Andamento | 0 |  |
 | Em Revisão | 0 |  |
 | Bloqueado | 0 |  |
-| Concluído | 38 | 01 a 35, 38, 40, 41 |
+| Concluído | 39 | 01 a 36, 38, 40, 41 |
 
 ## Faixas de numeração
 
@@ -35,16 +35,6 @@ Espelho em texto do quadro mantido no TickTick (projeto `CaixaDiario`), que é a
 ---
 
 ## Backlog/Ideias
-
-### 36. Implementar observabilidade completa com OpenTelemetry
-
-**Bloco:** Backlog · **Prioridade:** baixa · **Etiquetas:** condicional, observabilidade
-
-ÂNCORA: requisito diferencial 'Monitoramento e Observabilidade'; ADR-0012 do PacioliBank como referência.  
-POR QUE NÃO AGORA: teto de um parágrafo no Bloco 3.  
-GATILHO: entrega aceita para próxima etapa, ou pedido do avaliador.  
-ESCOPO: 1. traço distribuído pelo evento; 2. métricas de defasagem do projetor e tamanho da outbox; 3. painel local.  
-CRITÉRIO: traço único do POST até a projeção visível no painel.
 
 ### 37. Implementar a autenticação entre serviços e na API
 
@@ -666,3 +656,14 @@ GATILHO: reserva com 20 min ou mais livres após o cartão 33.
 ESCOPO: 1. topologia mínima em nuvem; 2. preços consultados e datados [NVI] até conferir; 3. licenças (todas open source previstas).  
 CRITÉRIO: tabela de custo mensal com fonte e data de cada preço.
 ENTREGA (2026-10-12 22:11): docs/06-estimativa-de-custos.md: opção A gerenciada ≈ US$ 195,63/mês, opção B VM única ≈ US$ 51,84/mês, cada preço com serviço, código de uso, versão do arquivo e data (AWS Price List Bulk API, sa-east-1, 2026-10-12); 13 licenças conferidas, nenhuma paga.
+
+### 36. Implementar observabilidade completa com OpenTelemetry
+
+**Bloco:** Backlog · **Prioridade:** baixa · **Etiquetas:** condicional, observabilidade
+
+ÂNCORA: requisito diferencial 'Monitoramento e Observabilidade'; ADR-0012 do PacioliBank como referência.  
+POR QUE NÃO AGORA: teto de um parágrafo no Bloco 3.  
+GATILHO: entrega aceita para próxima etapa, ou pedido do avaliador.  
+ESCOPO: 1. traço distribuído pelo evento; 2. métricas de defasagem do projetor e tamanho da outbox; 3. painel local.  
+CRITÉRIO: traço único do POST até a projeção visível no painel.
+ENTREGA (2026-10-12 22:25): ADR-0003; OpenTelemetry nos dois serviços com traceparent gravado na outbox e propagado no cabeçalho AMQP; métricas de outbox, projetor, HTTP e limitador; painel Aspire no compose; traço único POST → outbox publicar → projetor aplicar conferido pela API do painel (8 spans, 2 serviços) e por teste; 52 testes verdes; POST 201 com o painel parado.

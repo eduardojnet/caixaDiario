@@ -2,9 +2,9 @@
 
 **Documento vivo.** Atualizado ao fim de cada bloco de trabalho. Descreve o que existe, o que falta e o que está decidido, sem otimismo.
 
-**Última atualização:** 2026-10-12 (cartão 35 do backlog concluído)
+**Última atualização:** 2026-10-12 (cartão 36 do backlog concluído)
 **Build:** `dotnet build CaixaDiario.sln`: 0 avisos, 0 erros (`TreatWarningsAsErrors`, `AnalysisMode=Recommended`)
-**Testes:** 51 passando, 0 falhas (domínio 25, arquitetura 4, integração 22 com PostgreSQL e RabbitMQ reais via Testcontainers); carga k6 a 50 req/s com 0,00% de falha. CI verde no GitHub Actions; cobertura de linha do domínio 96,36%; mutação do domínio 98,21% (Stryker.NET 5.0.0), ambos com limite de 85%
+**Testes:** 52 passando, 0 falhas (domínio 25, arquitetura 4, integração 23 com PostgreSQL e RabbitMQ reais via Testcontainers); carga k6 a 50 req/s com 0,00% de falha. CI verde no GitHub Actions; cobertura de linha do domínio 96,36%; mutação do domínio 98,21% (Stryker.NET 5.0.0), ambos com limite de 85%
 
 ---
 
@@ -65,12 +65,12 @@ Conferidos contra o repositório publicado em 2026-10-12 21:37 (cartão 33): cad
 - Testes: domínio, arquitetura (NetArchTest: Lancamentos não referencia Consolidado; sem assembly compartilhado), RNF-01 sem Consolidado e sem broker, idempotência sequencial e concorrente, estorno, imutabilidade por privilégio, projetor idempotente, reconciliação ponta a ponta, contrato nos dois lados.
 - C3 componentes (`docs/diagrams/c3-componentes.md`), desenhado a partir do código.
 - Integração contínua (`.github/workflows/ci.yml`): build sem avisos, testes, cobertura do domínio ≥ 85% e mutação do domínio ≥ 85%, ações fixadas por SHA.
+- Observabilidade (ADR-0003): OpenTelemetry nos dois serviços, traço único do `POST` à projeção via `outbox.traceparent` e cabeçalho AMQP, métricas de outbox e projetor, logs por OTLP, painel Aspire Dashboard em `:18888`.
 - RNF medidos: RNF-01 (teste e demonstração no compose), RNF-02 e RNF-03 (k6: 3001 req a 50/s, 0,00% de falha, p95 1,56 ms), RNF-04 (reconciliação), RNF-06 (privilégio), RNF-07 (idempotência).
 
 ## 5. Especificado, não implementado
 
 - RNF-05: meta de 5 s mantida como proposta `[NVI]`. A marca `defasado` está implementada; a defasagem em operação normal não foi medida com instrumento (observada abaixo de 1 s nas demonstrações, sem registro sistemático).
-- Observabilidade: métricas de outbox e de defasagem, traço OpenTelemetry (`docs/04-arquitetura-alvo.md` §4.7). Implementado só log JSON e verificações de saúde.
 - Segurança de integração: credencial de broker por serviço, TLS, OAuth2 client credentials na API (§4.8). Ambiente local usa um usuário só no broker e não autentica a API.
 - Integrações com maquininha e banco (C1).
 - Arquitetura de Transição (`docs/05-arquitetura-de-transicao.md`): fachada, adaptador do legado e adaptador reverso especificados sobre legado hipotético (H-01 a H-05); nenhuma peça implementada.
@@ -87,6 +87,7 @@ Conferidos contra o repositório publicado em 2026-10-12 21:37 (cartão 33): cad
 | PR-01 a PR-04 | Premissas com impacto declarado | `docs/03-requisitos.md` §5 | Bloco 1 |
 | L-03 | Eventos publicados antes de existir a fila do Consolidado seriam descartados pela exchange fanout | Corrigido: publicação com `mandatory`; sem fila, o evento fica na outbox. Achado pelo teste de reconciliação | Bloco 4 |
 | L-04 | `defasado` baseado só no atraso do último evento ficaria verdadeiro para sempre depois de recuperar um acúmulo | Corrigido: estado do projetor (conexão e fila) entra no cálculo. Achado na demonstração do RNF-01 | Bloco 4 |
+| L-06 | Gatilho do cartão 39 (migração versionada) cumprido: `db/lancamentos/0003_rastreamento.sql` é a primeira mudança de esquema depois da entrega; só se aplica em volume novo (`docker compose down -v`) | Declarado no ADR-0003 e no README; cartão 39 aguarda decisão de Eduardo | Cartão 36 |
 | L-05 | O Consolidado não enxerga a outbox de Lancamentos: com o broker fora, ele sabe que está desconectado, mas não quantos eventos esperam | Declarado; evolução: batimento periódico do despachante. Não muda o RNF-01 | Bloco 4 |
 
 ---
@@ -165,3 +166,6 @@ Conferidos contra o repositório publicado em 2026-10-12 21:37 (cartão 33): cad
 | 2026-10-12 | 2026-10-12 21:59 cartão 34 concluído: docs/05-arquitetura-de-transicao.md com hipóteses H-01 a H-05, estrangulamento em 5 fases, critério de avanço C1 a C4 e caminho de volta por fase, diagrama de fases e de arquitetura transitória (mermaid-cli rc=0) |
 | 2026-10-12 | Cartão 35: Eduardo autorizou explicitamente ("Siga para 35"), exceção à regra 15 só para a estimativa de custos; segue valendo para 36 e 37 |
 | 2026-10-12 | 2026-10-12 22:11 cartão 35 concluído: docs/06-estimativa-de-custos.md: opção A gerenciada ≈ US$ 195,63/mês, opção B VM única ≈ US$ 51,84/mês, cada preço com serviço, código de uso, versão do arquivo e data (AWS Price List Bulk API, sa-east-1, 2026-10-12); 13 licenças conferidas, nenhuma paga |
+| 2026-10-12 | Cartão 36: Eduardo autorizou explicitamente ("Completa com OpenTelemetry. Siga para o 36"), exceção à regra 15 só para a observabilidade; segue valendo para o 37 |
+| 2026-10-12 | Cartão 36: API de leitura do painel aberta sem autenticação (`DASHBOARD__API__AUTHMODE: Unsecured`), só no ambiente local, para conferir o traço por linha de comando |
+| 2026-10-12 | 2026-10-12 22:25 cartão 36 concluído: ADR-0003; OpenTelemetry nos dois serviços com traceparent gravado na outbox e propagado no cabeçalho AMQP; métricas de outbox, projetor, HTTP e limitador; painel Aspire no compose; traço único POST → outbox publicar → projetor aplicar conferido pela API do painel (8 spans, 2 serviços) e por teste; 52 testes verdes; POST 201 com o painel parado |

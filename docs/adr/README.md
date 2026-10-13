@@ -10,6 +10,7 @@ Comece pelo [ADR-0001](ADR-0001-estilo-arquitetural.md); o ADR-0002 depende dele
 |---|---|---|---|
 | [0001](ADR-0001-estilo-arquitetural.md) | Dois serviços com integração assíncrona, justificados por isolamento de falha, não por volume | Aceito | RNF-01, RNF-02, RE-01 |
 | [0002](ADR-0002-plataforma-armazenamento-e-integracao.md) | .NET 10 LTS, PostgreSQL 17 por serviço, Dapper, outbox com RabbitMQ, Testcontainers, NetArchTest, k6 | Aceito | RNF-01, RNF-06, RNF-07, RE-04 |
+| [0003](ADR-0003-observabilidade.md) | OpenTelemetry com OTLP para o Aspire Dashboard; traço propagado pela outbox e pelo cabeçalho da mensagem | Aceito | RNF-01, RNF-03, RNF-05 |
 
 ## Regras deste diretório
 
