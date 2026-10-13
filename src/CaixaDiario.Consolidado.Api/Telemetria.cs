@@ -28,6 +28,12 @@ public sealed class Telemetria
             "caixadiario.projetor.fila_pendente", () => estado.Pendentes,
             description: "Mensagens esperando na fila do Consolidado");
         medidor.CreateObservableGauge(
+            "caixadiario.projetor.idade_do_batimento", () => estado.IdadeDoBatimento.TotalSeconds,
+            unit: "s", description: "Tempo desde o ultimo batimento do despachante de Lancamentos");
+        medidor.CreateObservableGauge(
+            "caixadiario.projetor.outbox_pendentes_na_origem", () => estado.OutboxPendentesNaOrigem,
+            description: "Eventos pendentes na outbox de Lancamentos, segundo o ultimo batimento");
+        medidor.CreateObservableGauge(
             "caixadiario.projetor.conectado", () => estado.Conectado ? 1 : 0,
             description: "1 quando o projetor esta conectado ao broker");
     }

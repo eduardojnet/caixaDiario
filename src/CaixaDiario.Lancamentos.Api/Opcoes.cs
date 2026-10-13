@@ -33,6 +33,9 @@ public sealed class OpcoesDespacho
     public TimeSpan EsperaMaxima { get; set; } = TimeSpan.FromSeconds(10);
 
     public int TamanhoDoLote { get; set; } = 100;
+
+    /// <summary>Intervalo do batimento publicado com o estado da outbox (cartao 43).</summary>
+    public TimeSpan IntervaloDoBatimento { get; set; } = TimeSpan.FromSeconds(5);
 }
 
 public sealed class OpcoesCaixa

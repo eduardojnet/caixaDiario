@@ -91,7 +91,9 @@ app.MapGet("/v1/caixas/{caixaId}/consolidado/{data}", async (
         {
             entrada.AbsoluteExpirationRelativeToNow = opcoes.Value.DuracaoDoCache;
             return repositorio.ConsultarAsync(
-                caixaId, data, atraso => projetor.Defasado(atraso, opcoes.Value.LimiteDeDefasagem), cancellationToken);
+                caixaId, data,
+                atraso => projetor.Defasado(atraso, opcoes.Value.LimiteDeDefasagem, opcoes.Value.LimiteDoBatimento),
+                cancellationToken);
         }).ConfigureAwait(false);
         return Results.Ok(saldo);
     })

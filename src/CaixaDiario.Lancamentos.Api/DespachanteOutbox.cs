@@ -32,11 +32,17 @@ public sealed partial class DespachanteOutbox(
         while (!stoppingToken.IsCancellationRequested)
         {
             // Medida da outbox independente do broker: e justamente com o
-            // broker fora que ela precisa continuar sendo informada.
+            // broker fora que ela precisa continuar sendo informada. A mesma
+            // medida vai no batimento para o Consolidado (cartao 43).
             if (DateTime.UtcNow >= proximaMedida)
             {
-                await MedirOutboxAsync(stoppingToken).ConfigureAwait(false);
-                proximaMedida = DateTime.UtcNow.AddSeconds(5);
+                var medida = await MedirOutboxAsync(stoppingToken).ConfigureAwait(false);
+                if (medida is { } m)
+                {
+                    await PublicarBatimentoAsync(m.Pendentes, m.IdadeSegundos, stoppingToken).ConfigureAwait(false);
+                }
+
+                proximaMedida = DateTime.UtcNow + _opcoes.IntervaloDoBatimento;
             }
 
             TimeSpan espera;
@@ -123,7 +129,7 @@ public sealed partial class DespachanteOutbox(
         return pendentes.Count;
     }
 
-    private async Task MedirOutboxAsync(CancellationToken cancellationToken)
+    private async Task<(long Pendentes, double IdadeSegundos)?> MedirOutboxAsync(CancellationToken cancellationToken)
     {
         try
         {
@@ -135,10 +141,35 @@ public sealed partial class DespachanteOutbox(
                 """,
                 cancellationToken: cancellationToken)).ConfigureAwait(false);
             telemetria.AtualizarOutbox(medida.Pendentes, medida.IdadeSegundos);
+            return medida;
         }
         catch (NpgsqlException ex)
         {
+            // Sem banco nao ha medida nem batimento: o Consolidado vai notar a
+            // falta do batimento e marcar defasado, que e o correto.
             LogFalhaNaMedida(logger, ex);
+            return null;
+        }
+    }
+
+    private async Task PublicarBatimentoAsync(long pendentes, double idadeSegundos, CancellationToken cancellationToken)
+    {
+        var batimento = new BatimentoDoDespachanteV1(1, DateTimeOffset.UtcNow, pendentes, idadeSegundos);
+        try
+        {
+            await publicador.PublicarBatimentoAsync(
+                batimento.Serializar(), 3 * _opcoes.IntervaloDoBatimento, cancellationToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+#pragma warning disable CA1031 // Falha no batimento nao afeta o despacho nem o registro; so e registrada.
+        catch (Exception ex)
+#pragma warning restore CA1031
+        {
+            LogFalhaNoBatimento(logger, ex);
+            await publicador.DescartarAsync().ConfigureAwait(false);
         }
     }
 
@@ -153,6 +184,9 @@ public sealed partial class DespachanteOutbox(
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "Outbox: falha no despacho ({Falhas} seguidas); nova tentativa em {EsperaMs} ms. Os eventos continuam pendentes")]
     private static partial void LogFalhaNoDespacho(ILogger logger, Exception ex, int falhas, double esperaMs);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "Batimento nao publicado; o Consolidado vai marcar defasado se a falha persistir")]
+    private static partial void LogFalhaNoBatimento(ILogger logger, Exception ex);
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "Outbox: nao foi possivel medir a fila pendente")]
     private static partial void LogFalhaNaMedida(ILogger logger, Exception ex);

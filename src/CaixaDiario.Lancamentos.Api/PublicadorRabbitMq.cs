@@ -44,6 +44,27 @@ public sealed class PublicadorRabbitMq(IOptions<OpcoesBroker> opcoes) : IAsyncDi
             Encoding.UTF8.GetBytes(payload), cancellationToken).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Publica o batimento (cartao 43). Sem garantia de proposito: nao
+    /// persistente, sem mandatory (sem fila, e descartado sem erro) e com
+    /// expiracao, para batimento velho nao acumular com o Consolidado fora.
+    /// </summary>
+    public async Task PublicarBatimentoAsync(string payload, TimeSpan validade, CancellationToken cancellationToken)
+    {
+        var canal = await ObterCanalAsync(cancellationToken).ConfigureAwait(false);
+        var propriedades = new BasicProperties
+        {
+            Type = BatimentoDoDespachanteV1.NomeDoTipo,
+            ContentType = "application/json",
+            DeliveryMode = DeliveryModes.Transient,
+            Expiration = ((long)validade.TotalMilliseconds).ToString(System.Globalization.CultureInfo.InvariantCulture),
+        };
+
+        await canal.BasicPublishAsync(
+            _opcoes.Exchange, routingKey: string.Empty, mandatory: false, propriedades,
+            Encoding.UTF8.GetBytes(payload), cancellationToken).ConfigureAwait(false);
+    }
+
     /// <summary>Descarta a conexao depois de uma falha; a proxima publicacao reconecta.</summary>
     public async Task DescartarAsync()
     {

@@ -40,6 +40,12 @@ public sealed class OpcoesConsulta
     public TimeSpan LimiteDeDefasagem { get; set; } = TimeSpan.FromSeconds(5);
 
     /// <summary>
+    /// Sem batimento do despachante por mais que isto, a resposta sai defasada
+    /// (cartao 43). Tres intervalos do batimento de Lancamentos.
+    /// </summary>
+    public TimeSpan LimiteDoBatimento { get; set; } = TimeSpan.FromSeconds(15);
+
+    /// <summary>
     /// Requisicoes aceitas por segundo antes de responder 429. Acima dos 50
     /// req/s do enunciado, para o orcamento de 5% nao ser gasto em operacao normal.
     /// </summary>

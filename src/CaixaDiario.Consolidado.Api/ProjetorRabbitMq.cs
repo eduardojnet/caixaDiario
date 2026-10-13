@@ -114,6 +114,22 @@ public sealed partial class ProjetorRabbitMq(
 
     private async Task TratarAsync(IChannel canal, BasicDeliverEventArgs entrega, CancellationToken cancellationToken)
     {
+        // Batimento do despachante (cartao 43): atualiza o estado e confirma.
+        if (entrega.BasicProperties.Type == BatimentoDoDespachanteV1.NomeDoTipo)
+        {
+            if (BatimentoDoDespachanteV1.Ler(entrega.Body.Span) is { } batimento)
+            {
+                estado.RegistrarBatimento(batimento.OutboxPendentes, batimento.OutboxIdadeMaisAntigaSegundos);
+            }
+            else
+            {
+                LogMensagemInvalida(logger, entrega.BasicProperties.MessageId);
+            }
+
+            await canal.BasicAckAsync(entrega.DeliveryTag, multiple: false, cancellationToken).ConfigureAwait(false);
+            return;
+        }
+
         // Continua o traco iniciado no POST de Lancamentos (ADR-0003).
         ActivityContext.TryParse(LerTraceparent(entrega.BasicProperties), null, out var origem);
         using var atividade = Telemetria.Fonte.StartActivity("projetor aplicar", ActivityKind.Consumer, origem);
