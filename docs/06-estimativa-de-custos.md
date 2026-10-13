@@ -40,7 +40,7 @@ Mesma forma do [C2](diagrams/c2-conteineres.md): duas APIs, dois bancos, um brok
 
 **Decisões de dimensionamento:**
 
-- **Dois bancos `db.t4g.micro`, não um maior.** Um banco por serviço é o que impede a carga do consolidado de atingir o banco crítico (ADR-0002). Custa US$ 24,82 a mais que um banco compartilhado; é o preço do RNF-01 na camada de dados.
+- **Dois bancos `db.t4g.micro`, não um maior.** Um banco por serviço é o que impede a carga do consolidado de atingir o banco crítico (ADR-0002). Custa US$ 29,20 por mês a mais que um banco compartilhado (uma instância de US$ 24,82 e 20 GB de US$ 4,38); é o preço do RNF-01 na camada de dados.
 - **Tarefas em sub-rede pública com IP próprio, entrada só pelo balanceador.** Evita um NAT Gateway, que custaria mais que as duas tarefas juntas. O custo é expor um IP por tarefa, mitigado por grupo de segurança que só aceita tráfego do balanceador. Gatilho de revisão: exigência de rede privada sem IP público.
 - **Sem réplicas.** O teste de carga mediu 0,00% de falha a 50 req/s com uma instância local de cada serviço (RNF-02); réplicas não são justificadas pela carga declarada.
 
