@@ -2,7 +2,7 @@
 
 **Documento vivo.** Atualizado ao fim de cada bloco de trabalho. Descreve o que existe, o que falta e o que está decidido, sem otimismo.
 
-**Última atualização:** 2026-10-12 (Bloco 2 concluído, G2 aprovado)
+**Última atualização:** 2026-10-12 (Bloco 3 concluído)
 **Build:** convenções definidas (`Directory.Build.props`, `global.json`); nenhum projeto ainda
 **Testes:** inexistentes
 
@@ -28,13 +28,13 @@
 |---|---|---|
 | O1 | Mapeamento de domínios funcionais e capacidades de negócio | Atendido: `docs/01-capacidades-de-negocio.md`, `docs/02-dominios-funcionais.md` |
 | O2 | Refinamento de requisitos funcionais e não funcionais | Atendido: `docs/03-requisitos.md` (RF-01 a RF-10, RNF-01 a RNF-07, restrições, premissas, drivers, QA-01 a QA-05) |
-| O3 | Desenho da solução completo (Arquitetura Alvo) | Pendente (Bloco 3) |
+| O3 | Desenho da solução completo (Arquitetura Alvo) | Atendido: `docs/04-arquitetura-alvo.md`, `docs/diagrams/` (C1, C2, sequência), `docs/contratos/` |
 | O4 | Justificativa de ferramentas, tecnologias e tipo de arquitetura | Atendido: `docs/adr/ADR-0001`, `docs/adr/ADR-0002`, aceitos no G2 |
 | O5 | Linguagem dominada | Previsto: C# / .NET 10 |
 | O6 | Testes | Pendente (Bloco 4) |
 | O7 | README: como funciona e como rodar localmente | Pendente (Bloco 5) |
 | O8 | Repositório público no GitHub | Publicado: https://github.com/eduardojnet/caixaDiario, push a cada bloco desde o G2 |
-| O9 | Toda documentação no repositório | Em andamento: Bloco 1 em `docs/` |
+| O9 | Toda documentação no repositório | Em andamento: Blocos 1 a 3 em `docs/` |
 
 > O enunciado descarta o teste se algum requisito obrigatório não for minimamente atendido. Nenhum item desta tabela pode terminar como "Pendente".
 
@@ -61,6 +61,9 @@
 
 - RF-01 a RF-10 e RNF-01 a RNF-07: especificados em `docs/03-requisitos.md`; implementação e medição previstas no Bloco 4.
 - RNF-05: meta proposta de 5 s `[NVI]` até medir.
+- Arquitetura Alvo, C2 e sequência: todos os elementos marcados como especificado até o Bloco 4.
+- Observabilidade (métricas e traço OpenTelemetry) e segurança de integração (TLS, OAuth2, credencial por serviço no broker): especificadas em `docs/04-arquitetura-alvo.md` §4.7 e §4.8, não implementadas.
+- Integrações com maquininha e banco (C1): especificadas, fora do escopo.
 
 ---
 
@@ -82,11 +85,11 @@
 | 0. Pré-voo e repositório | 10 | 19:55 | 19:57 | 2 | Concluído | Ferramentas respondem; remoto configurado |
 | 1. Fronteira e requisitos | 65 | 21:00 | 21:03 | 3 | Concluído | Dois serviços nominais no mapa; RNF-01 e RNF-02 com meta e medição |
 | 2. Decisões | 40 | 21:04 | 21:06 | 2 | Concluído | Frase volume x isolamento no ADR-0001; G2 aprovado |
-| 3. Arquitetura Alvo | 35 | | | | Pendente | C2 renderiza; sobrevivência de Lancamentos visível |
+| 3. Arquitetura Alvo | 35 | 21:07 | 21:11 | 4 | Concluído | C2 renderiza; sobrevivência de Lancamentos visível |
 | 4. Código e testes | 80 | | | | Pendente | Compose sobe; POST 201; saldo confere; testes passam; POST 201 com Consolidado parado |
 | 5. README e fechamento | 40 | | | | Pendente | Clone limpo sobe só com o README |
 | Reserva | 30 | | | | Disponível | Consumida apenas pelo Bloco 4 ou por revisão final |
-| **Total** | **300** | | | **7** | | |
+| **Total** | **300** | | | **11** | | |
 
 ---
 
@@ -109,3 +112,11 @@
 | 2026-10-12 | 2026-10-12 21:04 cartão 12 concluído: ADR-0001 com critérios datados 2026-10-12 antes das opções, conta 50 x 86.400 ≈ 4,3 milhões, frase literal 'O volume não justifica a separação; o isolamento de falha justifica' (linha encontrada por grep), comparação com o PacioliBank, consequências negativas e gatilho |
 | 2026-10-12 | 2026-10-12 21:04 cartão 13 concluído: ADR-0002 com cinco temas, cada um com alternativa rejeitada e gatilho; transporte A/B/C decidido pelo critério 1; docs/adr/README.md com índice |
 | 2026-10-12 | 2026-10-12 21:06 cartão 14 concluído: G2 aprovado por Eduardo; ADR-0001 e ADR-0002 passam a Aceito com redação de fato; nenhuma marca da avaliadora em docs/; primeiro push de main |
+| 2026-10-12 | Push HTTPS falhou por credencial (`could not read Username`); remoto trocado para `git@github.com:eduardojnet/caixaDiario.git` e push concluído (origin/main = 36474e7) |
+| 2026-10-12 | TickTick sincronizado: cartões 04 a 14 movidos para Concluído, checklists marcados |
+| 2026-10-12 | 2026-10-12 21:10 cartão 15 concluído: docs/diagrams/c1-contexto.md e README.md da convenção; mermaid-cli 11.4.2 renderiza (rc=0) |
+| 2026-10-12 | 2026-10-12 21:10 cartão 16 concluído: docs/diagrams/c2-conteineres.md renderiza (rc=0, PNG inspecionado); nenhuma seta da zona sacrificável para a crítica; tabela de falhas explica a sobrevivência |
+| 2026-10-12 | 2026-10-12 21:10 cartão 17 concluído: docs/diagrams/sequencia-registro-e-projecao.md renderiza (rc=0); passos 4 a 6 mostram lançamento e evento na mesma transação |
+| 2026-10-12 | 2026-10-12 21:10 cartão 18 concluído: docs/contratos/lancamento-registrado.v1.md com 8 campos, exemplo JSON versionado em arquivo próprio, regra de versão e semântica ao menos uma vez |
+| 2026-10-12 | 2026-10-12 21:10 cartão 19 concluído: docs/04-arquitetura-alvo.md nas seis camadas da §11.5, degradação, um parágrafo de observabilidade e um de segurança |
+| 2026-10-12 | Bloco 3: validação Mermaid com `minlag/mermaid-cli:11.4.2` em contêiner (imagem baixada para isso); C1, C2 e sequência renderizam com rc=0. Exemplo do contrato em arquivo JSON próprio para os testes de contrato dos dois lados lerem o mesmo arquivo |

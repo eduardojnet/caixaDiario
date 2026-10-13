@@ -1,0 +1,10 @@
+{
+  "eventoId": "0f8e2c5a-6b1d-4c3e-9a7f-2d4b6e8f0a1c",
+  "versao": 1,
+  "lancamentoId": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+  "caixaId": "loja-centro",
+  "tipo": "CREDITO",
+  "valor": 150.75,
+  "dataDoFato": "2026-10-12",
+  "registradoEm": "2026-10-12T14:32:05.123Z"
+}

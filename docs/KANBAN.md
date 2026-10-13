@@ -301,10 +301,10 @@ CRITÉRIO: docs/diagrams/c1-contexto.md em Mermaid, renderiza no GitHub, legenda
 RISCO: sem contexto, o C2 perde o leitor.  
 TETO: 5 min (Bloco 3).
 
-- [ ] 15.1 Ator: comerciante
-- [ ] 15.2 Sistema CaixaDiario
-- [ ] 15.3 Externos como especificados (maquininha, banco)
-- [ ] 15.4 Criar docs/diagrams/README.md com a convenção de legenda
+- [x] 15.1 Ator: comerciante
+- [x] 15.2 Sistema CaixaDiario
+- [x] 15.3 Externos como especificados (maquininha, banco)
+- [x] 15.4 Criar docs/diagrams/README.md com a convenção de legenda
 
 ### 16. Desenhar o C4 nível 2 de contêineres com a dependência unidirecional
 
@@ -315,11 +315,11 @@ CRITÉRIO: docs/diagrams/c2-conteineres.md renderiza sem erro; setas só no sent
 RISCO: é o diagrama que prova o RNF duro; seta de volta invalida a arquitetura.  
 TETO: 10 min (Bloco 3).
 
-- [ ] 16.1 Contêineres Lancamentos e banco de lançamentos com outbox
-- [ ] 16.2 Broker
-- [ ] 16.3 Consolidado e banco do consolidado
-- [ ] 16.4 Setas apenas no sentido de Lancamentos para Consolidado
-- [ ] 16.5 Validar a sintaxe Mermaid
+- [x] 16.1 Contêineres Lancamentos e banco de lançamentos com outbox
+- [x] 16.2 Broker
+- [x] 16.3 Consolidado e banco do consolidado
+- [x] 16.4 Setas apenas no sentido de Lancamentos para Consolidado
+- [x] 16.5 Validar a sintaxe Mermaid
 
 ### 17. Desenhar a sequência de registro, despacho, projeção e consulta
 
@@ -330,10 +330,10 @@ CRITÉRIO: docs/diagrams/sequencia-registro-e-projecao.md renderiza; mostra lan�
 RISCO: sem a sequência, a outbox fica só nomeada.  
 TETO: 5 min (Bloco 3).
 
-- [ ] 17.1 POST com Idempotency-Key e transação única
-- [ ] 17.2 Despachante publica no broker
-- [ ] 17.3 Projetor aplica de forma idempotente
-- [ ] 17.4 GET do consolidado com atualizadoAte e defasado
+- [x] 17.1 POST com Idempotency-Key e transação única
+- [x] 17.2 Despachante publica no broker
+- [x] 17.3 Projetor aplica de forma idempotente
+- [x] 17.4 GET do consolidado com atualizadoAte e defasado
 
 ### 18. Especificar o contrato de integração LancamentoRegistrado v1
 
@@ -344,10 +344,10 @@ CRITÉRIO: docs/contratos/lancamento-registrado.v1.md com campos, tipos, exemplo
 RISCO: contrato implícito acopla os serviços por código.  
 TETO: 5 min (Bloco 3).
 
-- [ ] 18.1 Campos: eventoId, versao, lancamentoId, caixaId, tipo, valor, dataDoFato, registradoEm
-- [ ] 18.2 Exemplo JSON versionado
-- [ ] 18.3 Regra de evolução de versão
-- [ ] 18.4 Semântica ao menos uma vez e idempotência do consumidor
+- [x] 18.1 Campos: eventoId, versao, lancamentoId, caixaId, tipo, valor, dataDoFato, registradoEm
+- [x] 18.2 Exemplo JSON versionado
+- [x] 18.3 Regra de evolução de versão
+- [x] 18.4 Semântica ao menos uma vez e idempotência do consumidor
 
 ### 19. Redigir o documento de Arquitetura Alvo
 
@@ -358,11 +358,11 @@ CRITÉRIO: docs/04-arquitetura-alvo.md com visão, decisões aplicadas, degrada�
 RISCO: abrir os diferenciais além de um parágrafo consome o tempo do Bloco 4.  
 TETO: 10 min (Bloco 3).
 
-- [ ] 19.1 Visão e ligação com os ADRs
-- [ ] 19.2 Estratégia de degradação: cache, limitador, 429 no orçamento, defasado
-- [ ] 19.3 Um parágrafo de observabilidade
-- [ ] 19.4 Um parágrafo de segurança de integração
-- [ ] 19.5 Verificar critério do Bloco 3, atualizar ESTADO e push
+- [x] 19.1 Visão e ligação com os ADRs
+- [x] 19.2 Estratégia de degradação: cache, limitador, 429 no orçamento, defasado
+- [x] 19.3 Um parágrafo de observabilidade
+- [x] 19.4 Um parágrafo de segurança de integração
+- [x] 19.5 Verificar critério do Bloco 3, atualizar ESTADO e push
 
 ### 20. Montar a solução .NET e o docker compose
 
@@ -585,11 +585,11 @@ CRITÉRIO: ls -R .claude mostra settings.json e skills/proximo/SKILL.md; /status
 RISCO: sem isso, nenhum bloco roda pelo procedimento único.  
 TETO: fora dos 300 min (preparação).
 
-- [ ] 04.1 Copiar _instalar/settings.json para .claude/
-- [ ] 04.2 Copiar _instalar/SKILL.md para .claude/skills/proximo/
-- [ ] 04.3 Remover a pasta _instalar
-- [ ] 04.4 Abrir o Claude Code e conferir /status
-- [ ] 04.5 Confirmar /proximo na lista de comandos
+- [x] 04.1 Copiar _instalar/settings.json para .claude/
+- [x] 04.2 Copiar _instalar/SKILL.md para .claude/skills/proximo/
+- [x] 04.3 Remover a pasta _instalar
+- [x] 04.4 Abrir o Claude Code e conferir /status
+- [x] 04.5 Confirmar /proximo na lista de comandos
 
 ---
 
