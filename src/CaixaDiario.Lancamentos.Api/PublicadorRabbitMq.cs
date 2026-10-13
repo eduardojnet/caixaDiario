@@ -15,7 +15,8 @@ public sealed class PublicadorRabbitMq(IOptions<OpcoesBroker> opcoes) : IAsyncDi
     private IConnection? _conexao;
     private IChannel? _canal;
 
-    public async Task PublicarAsync(Guid eventoId, string tipoEvento, string payload, CancellationToken cancellationToken)
+    public async Task PublicarAsync(
+        Guid eventoId, string tipoEvento, string payload, string? traceparent, CancellationToken cancellationToken)
     {
         var canal = await ObterCanalAsync(cancellationToken).ConfigureAwait(false);
         var propriedades = new BasicProperties
@@ -25,6 +26,13 @@ public sealed class PublicadorRabbitMq(IOptions<OpcoesBroker> opcoes) : IAsyncDi
             ContentType = "application/json",
             DeliveryMode = DeliveryModes.Persistent,
         };
+
+        // Propagacao W3C pelo cabecalho da mensagem: o projetor do Consolidado
+        // continua o mesmo traco (ADR-0003).
+        if (traceparent is not null)
+        {
+            propriedades.Headers = new Dictionary<string, object?> { ["traceparent"] = traceparent };
+        }
 
         // Com confirmacao habilitada no canal, a chamada so retorna depois do
         // ack do broker; nack ou queda lancam excecao, e o evento fica pendente.

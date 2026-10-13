@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Dapper;
 using Microsoft.Extensions.Options;
 using Npgsql;
@@ -17,6 +18,7 @@ namespace CaixaDiario.Lancamentos.Api;
 public sealed partial class DespachanteOutbox(
     NpgsqlDataSource dataSource,
     PublicadorRabbitMq publicador,
+    Telemetria telemetria,
     IOptions<OpcoesDespacho> opcoes,
     ILogger<DespachanteOutbox> logger) : BackgroundService
 {
@@ -25,9 +27,18 @@ public sealed partial class DespachanteOutbox(
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var falhasSeguidas = 0;
+        var proximaMedida = DateTime.MinValue;
 
         while (!stoppingToken.IsCancellationRequested)
         {
+            // Medida da outbox independente do broker: e justamente com o
+            // broker fora que ela precisa continuar sendo informada.
+            if (DateTime.UtcNow >= proximaMedida)
+            {
+                await MedirOutboxAsync(stoppingToken).ConfigureAwait(false);
+                proximaMedida = DateTime.UtcNow.AddSeconds(5);
+            }
+
             TimeSpan espera;
             try
             {
@@ -72,7 +83,8 @@ public sealed partial class DespachanteOutbox(
 
         var pendentes = (await conexao.QueryAsync<Pendente>(new CommandDefinition(
             """
-            SELECT id AS Id, evento_id AS EventoId, tipo_evento AS TipoEvento, payload::text AS Payload
+            SELECT id AS Id, evento_id AS EventoId, tipo_evento AS TipoEvento, payload::text AS Payload,
+                   traceparent AS Traceparent
             FROM outbox
             WHERE publicado_em IS NULL
             ORDER BY id
@@ -89,7 +101,14 @@ public sealed partial class DespachanteOutbox(
 
         foreach (var evento in pendentes)
         {
-            await publicador.PublicarAsync(evento.EventoId, evento.TipoEvento, evento.Payload, cancellationToken)
+            // Continua o traco da requisicao que registrou o lancamento.
+            ActivityContext.TryParse(evento.Traceparent, null, out var origem);
+            using var atividade = Telemetria.Fonte.StartActivity("outbox publicar", ActivityKind.Producer, origem);
+            atividade?.SetTag("messaging.system", "rabbitmq");
+            atividade?.SetTag("messaging.message.id", evento.EventoId.ToString());
+
+            await publicador.PublicarAsync(
+                evento.EventoId, evento.TipoEvento, evento.Payload, atividade?.Id ?? evento.Traceparent, cancellationToken)
                 .ConfigureAwait(false);
         }
 
@@ -99,8 +118,28 @@ public sealed partial class DespachanteOutbox(
             .ConfigureAwait(false);
 
         await transacao.CommitAsync(cancellationToken).ConfigureAwait(false);
+        telemetria.Publicados.Add(pendentes.Count);
         LogLotePublicado(logger, pendentes.Count);
         return pendentes.Count;
+    }
+
+    private async Task MedirOutboxAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await using var conexao = await dataSource.OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+            var medida = await conexao.QuerySingleAsync<(long Pendentes, double IdadeSegundos)>(new CommandDefinition(
+                """
+                SELECT count(*), COALESCE(EXTRACT(EPOCH FROM now() - min(criado_em)), 0)::float8
+                FROM outbox WHERE publicado_em IS NULL
+                """,
+                cancellationToken: cancellationToken)).ConfigureAwait(false);
+            telemetria.AtualizarOutbox(medida.Pendentes, medida.IdadeSegundos);
+        }
+        catch (NpgsqlException ex)
+        {
+            LogFalhaNaMedida(logger, ex);
+        }
     }
 
     private TimeSpan EsperaCrescente(int falhas)
@@ -115,6 +154,9 @@ public sealed partial class DespachanteOutbox(
     [LoggerMessage(Level = LogLevel.Warning, Message = "Outbox: falha no despacho ({Falhas} seguidas); nova tentativa em {EsperaMs} ms. Os eventos continuam pendentes")]
     private static partial void LogFalhaNoDespacho(ILogger logger, Exception ex, int falhas, double esperaMs);
 
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Outbox: nao foi possivel medir a fila pendente")]
+    private static partial void LogFalhaNaMedida(ILogger logger, Exception ex);
+
     [LoggerMessage(Level = LogLevel.Information, Message = "Outbox: despacho retomado depois de {Falhas} falhas")]
     private static partial void LogBrokerDeVolta(ILogger logger, int falhas);
 
@@ -127,5 +169,7 @@ public sealed partial class DespachanteOutbox(
         public string TipoEvento { get; set; } = string.Empty;
 
         public string Payload { get; set; } = string.Empty;
+
+        public string? Traceparent { get; set; }
     }
 }

@@ -4,6 +4,10 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Npgsql;
+using OpenTelemetry;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,7 +22,23 @@ var conexao = builder.Configuration.GetConnectionString("Consolidado")
 builder.Services.AddSingleton(_ => NpgsqlDataSource.Create(conexao));
 builder.Services.AddSingleton<RepositorioConsolidado>();
 builder.Services.AddSingleton<EstadoDoProjetor>();
+builder.Services.AddSingleton<Telemetria>();
 builder.Services.AddHostedService<ProjetorRabbitMq>();
+
+// Observabilidade (ADR-0003): traco da projecao como continuacao do POST de
+// Lancamentos; metricas do projetor, do HTTP (orcamento de 5% por codigo de
+// resposta) e do limitador; logs. OTLP so com OTEL_EXPORTER_OTLP_ENDPOINT.
+var telemetria = builder.Services.AddOpenTelemetry()
+    .ConfigureResource(r => r.AddService("consolidado"))
+    .WithTracing(t => t.AddSource(Telemetria.Nome).AddAspNetCoreInstrumentation().AddNpgsql())
+    .WithMetrics(m => m
+        .AddMeter(Telemetria.Nome, "Microsoft.AspNetCore.RateLimiting")
+        .AddAspNetCoreInstrumentation())
+    .WithLogging();
+if (!string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]))
+{
+    telemetria.UseOtlpExporter();
+}
 builder.Services.AddMemoryCache();
 
 // Degradacao controlada (Arquitetura Alvo §4.6): acima do limite, o excedente

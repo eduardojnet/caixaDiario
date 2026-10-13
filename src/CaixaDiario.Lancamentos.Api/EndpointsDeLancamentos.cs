@@ -34,6 +34,7 @@ public static class EndpointsDeLancamentos
         RepositorioLancamentos repositorio,
         TimeProvider relogio,
         IOptions<OpcoesCaixa> opcoesCaixa,
+        Telemetria telemetria,
         CancellationToken cancellationToken)
     {
         var chave = http.Request.Headers[CabecalhoIdempotencia].ToString();
@@ -63,6 +64,7 @@ public static class EndpointsDeLancamentos
         switch (resultado.Situacao)
         {
             case SituacaoRegistro.Criado:
+                telemetria.Registrados.Add(1, new KeyValuePair<string, object?>("tipo", resultado.Lancamento!.Tipo));
                 return Results.Created(
                     $"/v1/caixas/{Uri.EscapeDataString(caixaId)}/lancamentos?data={lancamento.DataDoFato:yyyy-MM-dd}",
                     resultado.Lancamento);

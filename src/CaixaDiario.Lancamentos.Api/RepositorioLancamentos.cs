@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using CaixaDiario.Lancamentos.Dominio;
 using Dapper;
 using Npgsql;
@@ -95,8 +96,15 @@ public sealed class RepositorioLancamentos(NpgsqlDataSource dataSource)
                 registrado.Valor, registrado.DataDoFato, registrado.RegistradoEm);
 
             await conexao.ExecuteAsync(new CommandDefinition(
-                "INSERT INTO outbox (evento_id, tipo_evento, payload) VALUES (@EventoId, @TipoEvento, @Payload::jsonb)",
-                new { evento.EventoId, TipoEvento = EventoLancamentoRegistradoV1.NomeDoTipo, Payload = evento.Serializar() },
+                "INSERT INTO outbox (evento_id, tipo_evento, payload, traceparent) VALUES (@EventoId, @TipoEvento, @Payload::jsonb, @Traceparent)",
+                new
+                {
+                    evento.EventoId,
+                    TipoEvento = EventoLancamentoRegistradoV1.NomeDoTipo,
+                    Payload = evento.Serializar(),
+                    // Contexto da requisicao: o despachante continua este traco ao publicar.
+                    Traceparent = Activity.Current?.Id,
+                },
                 transacao, cancellationToken: cancellationToken)).ConfigureAwait(false);
 
             await transacao.CommitAsync(cancellationToken).ConfigureAwait(false);

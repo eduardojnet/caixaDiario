@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using System.Text;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -12,6 +14,7 @@ namespace CaixaDiario.Consolidado.Api;
 public sealed partial class ProjetorRabbitMq(
     RepositorioConsolidado repositorio,
     EstadoDoProjetor estado,
+    Telemetria telemetria,
     IOptions<OpcoesBroker> opcoes,
     ILogger<ProjetorRabbitMq> logger) : BackgroundService
 {
@@ -110,6 +113,12 @@ public sealed partial class ProjetorRabbitMq(
 
     private async Task TratarAsync(IChannel canal, BasicDeliverEventArgs entrega, CancellationToken cancellationToken)
     {
+        // Continua o traco iniciado no POST de Lancamentos (ADR-0003).
+        ActivityContext.TryParse(LerTraceparent(entrega.BasicProperties), null, out var origem);
+        using var atividade = Telemetria.Fonte.StartActivity("projetor aplicar", ActivityKind.Consumer, origem);
+        atividade?.SetTag("messaging.system", "rabbitmq");
+        atividade?.SetTag("messaging.message.id", entrega.BasicProperties.MessageId);
+
         var evento = EventoLancamentoRegistradoV1.Ler(entrega.Body.Span);
         if (evento is null)
         {
@@ -123,8 +132,16 @@ public sealed partial class ProjetorRabbitMq(
         try
         {
             var aplicado = await repositorio.AplicarAsync(evento, cancellationToken).ConfigureAwait(false);
-            if (!aplicado)
+            atividade?.SetTag("caixadiario.lancamento_id", evento.LancamentoId.ToString());
+            atividade?.SetTag("caixadiario.reentrega", !aplicado);
+            if (aplicado)
             {
+                telemetria.Aplicados.Add(1);
+                estado.RegistrarDefasagem(DateTimeOffset.UtcNow - evento.RegistradoEm);
+            }
+            else
+            {
+                telemetria.Reentregas.Add(1);
                 LogReentrega(logger, evento.LancamentoId);
             }
 
@@ -134,12 +151,23 @@ public sealed partial class ProjetorRabbitMq(
         catch (Exception ex) when (ex is not OperationCanceledException)
 #pragma warning restore CA1031
         {
+            atividade?.SetStatus(ActivityStatusCode.Error, ex.Message);
             LogFalhaAoAplicar(logger, ex, evento.LancamentoId);
             await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(false);
             await canal.BasicNackAsync(entrega.DeliveryTag, multiple: false, requeue: true, cancellationToken)
                 .ConfigureAwait(false);
         }
     }
+
+    private static string? LerTraceparent(IReadOnlyBasicProperties propriedades) =>
+        propriedades.Headers is { } cabecalhos && cabecalhos.TryGetValue("traceparent", out var valor)
+            ? valor switch
+            {
+                byte[] bytes => Encoding.UTF8.GetString(bytes),
+                string texto => texto,
+                _ => null,
+            }
+            : null;
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "Projetor: broker indisponivel ({Falhas} falhas seguidas); o consolidado fica defasado ate reconectar")]
     private static partial void LogFalhaDeConexao(ILogger logger, Exception ex, int falhas);

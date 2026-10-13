@@ -2,7 +2,7 @@
 #   docker compose up --build -d
 #
 # Regra 1 visivel aqui: o servico lancamentos depende so do proprio banco.
-# Nao ha depends_on para broker, consolidado nem consolidado-db.
+# Nao ha depends_on para broker, consolidado, consolidado-db nem painel.
 
 name: caixadiario
 
@@ -41,6 +41,11 @@ services:
       Broker__Host: broker
       Broker__Usuario: ${BROKER_USER:-caixadiario}
       Broker__Senha: ${BROKER_PASSWORD:-caixadiario_local}
+      # Telemetria por OTLP para o painel (ADR-0003). Exportacao assincrona:
+      # painel fora do ar nao afeta o registro.
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://painel:18889
+      OTEL_SERVICE_NAME: lancamentos
+      OTEL_METRIC_EXPORT_INTERVAL: "10000"
     ports:
       - "8080:8080"
 
@@ -89,8 +94,24 @@ services:
       Broker__Host: broker
       Broker__Usuario: ${BROKER_USER:-caixadiario}
       Broker__Senha: ${BROKER_PASSWORD:-caixadiario_local}
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://painel:18889
+      OTEL_SERVICE_NAME: consolidado
+      OTEL_METRIC_EXPORT_INTERVAL: "10000"
     ports:
       - "8081:8080"
+
+  # Painel de observabilidade (ADR-0003): recebe tracos, metricas e logs por
+  # OTLP e os mostra em http://localhost:18888. So ambiente local:
+  # autenticacao desligada de proposito.
+  painel:
+    image: mcr.microsoft.com/dotnet/aspire-dashboard:13.6.0
+    environment:
+      DASHBOARD__FRONTEND__AUTHMODE: Unsecured
+      DASHBOARD__OTLP__AUTHMODE: Unsecured
+      # API de leitura da telemetria, usada para conferir o traco por linha de comando.
+      DASHBOARD__API__AUTHMODE: Unsecured
+    ports:
+      - "18888:18888"
 
 volumes:
   lancamentos-dados:

@@ -8,10 +8,16 @@ public sealed class EstadoDoProjetor
 {
     private int _conectado;
     private long _pendentes;
+    private long _defasagemMilissegundos;
 
     public bool Conectado => Volatile.Read(ref _conectado) == 1;
 
     public long Pendentes => Interlocked.Read(ref _pendentes);
+
+    public double DefasagemDoUltimoEventoSegundos => Interlocked.Read(ref _defasagemMilissegundos) / 1000.0;
+
+    public void RegistrarDefasagem(TimeSpan defasagem) =>
+        Interlocked.Exchange(ref _defasagemMilissegundos, (long)defasagem.TotalMilliseconds);
 
     public void Conectou() => Volatile.Write(ref _conectado, 1);
 
