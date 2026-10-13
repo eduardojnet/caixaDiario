@@ -6,9 +6,8 @@ Modelo C4 do CaixaDiario em [Mermaid](https://mermaid.js.org/), renderizado nati
 |---|---|---|---|
 | C1 | [Contexto](c1-contexto.md) | Negócio | Quem usa o sistema e com quem ele conversa? |
 | C2 | [Contêineres](c2-conteineres.md) | TI | Que processos e armazenamentos compõem o sistema, e por que o registro sobrevive à queda do consolidado? |
+| C3 | [Componentes](c3-componentes.md) | Engenharia | Como cada API se organiza por dentro, e onde cada regra vive? |
 | Sequência | [Registro, despacho, projeção e consulta](sequencia-registro-e-projecao.md) | Engenharia | Em que ordem as coisas acontecem, e onde está cada garantia? |
-
-C3 (componentes) não foi desenhado: com dois serviços pequenos, C2 e a sequência respondem às perguntas de arquitetura. Registrado em "o que faria com mais tempo".
 
 ## Implementado ou especificado
 

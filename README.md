@@ -1,5 +1,7 @@
 # CaixaDiario
 
+[![CI](https://github.com/eduardojnet/caixaDiario/actions/workflows/ci.yml/badge.svg)](https://github.com/eduardojnet/caixaDiario/actions/workflows/ci.yml)
+
 Controle de fluxo de caixa diário de um comerciante: lançamentos de crédito e débito e saldo diário consolidado. Solução de um desafio técnico de Arquiteto de Soluções.
 
 - [Como a aplicação funciona](#como-a-aplicação-funciona)
@@ -184,14 +186,14 @@ Depois de `down -v`, o passo 2 recria tudo, inclusive os esquemas.
 ## Testes
 
 ```bash
-dotnet test                 # 46 testes, sem erro e sem aviso
+dotnet test                 # 51 testes, sem erro e sem aviso
 ```
 
 Pré-requisitos: .NET SDK 10 e **Docker em execução**. Os testes de integração sobem PostgreSQL e RabbitMQ reais (Testcontainers) e aplicam os mesmos scripts de esquema que o compose usa.
 
 | Projeto | Testes | O que verifica |
 |---|---|---|
-| `CaixaDiario.Dominio.Tests` | 20 | Validação do lançamento: valor positivo com duas casas, tipo, data futura recusada, regra do estorno |
+| `CaixaDiario.Dominio.Tests` | 25 | Validação do lançamento: valor positivo com duas casas, limites de tamanho e de valor, tipo, data futura recusada, regra do estorno |
 | `CaixaDiario.Arquitetura.Tests` | 4 | NetArchTest: nenhum tipo de Lancamentos referencia Consolidado; sem assembly compartilhado; domínio sem infraestrutura |
 | `CaixaDiario.Integracao.Tests` | 22 | **RNF-01** (Lancamentos sem Consolidado e sem broker responde `201`, a outbox acumula e esvazia quando o broker volta), idempotência sequencial e com 10 envios simultâneos, estorno, imutabilidade por privilégio do banco, projetor idempotente, reconciliação ponta a ponta, contrato do evento nos dois lados |
 
@@ -206,6 +208,8 @@ docker run --rm -i --network caixadiario_default -e ALVO=http://consolidado:8080
 
 Taxa de chegada constante de 50 req/s por 60 s, limite `http_req_failed < 5%`. Resultado medido em 2026-10-12: 3001 requisições, **0,00% de falha**, p95 de 1,56 ms.
 
+**Integração contínua.** A cada push, o [GitHub Actions](.github/workflows/ci.yml) compila sem avisos, roda os testes (com PostgreSQL e RabbitMQ reais), exige cobertura de linha do domínio de 85% (medida: 96,36%) e roda o teste de mutação do domínio com limite de 85% (Stryker.NET 5.0.0, medido: 98,21%). Para rodar a mutação localmente: `dotnet tool restore` e, em `tests/CaixaDiario.Dominio.Tests`, `dotnet stryker`.
+
 ---
 
 ## Documentação
@@ -217,7 +221,7 @@ Taxa de chegada constante de 50 req/s por 60 s, limite `http_req_failed < 5%`. R
 | [03 Requisitos](docs/03-requisitos.md) | RF, RNF com métrica, meta e medição, restrições, premissas, drivers, questões abertas |
 | [04 Arquitetura Alvo](docs/04-arquitetura-alvo.md) | Visões de negócio, operacional e técnica; degradação; observabilidade; segurança; trade-offs |
 | [ADRs](docs/adr/README.md) | ADR-0001 estilo arquitetural; ADR-0002 plataforma, armazenamento e integração |
-| [Diagramas](docs/diagrams/README.md) | C1 contexto, C2 contêineres, sequência de registro e projeção |
+| [Diagramas](docs/diagrams/README.md) | C1 contexto, C2 contêineres, C3 componentes, sequência de registro e projeção |
 | [Contrato do evento](docs/contratos/lancamento-registrado.v1.md) | `LancamentoRegistrado` v1, com exemplo JSON e regra de versão |
 | [Estado do projeto](docs/ESTADO.md) | O que está implementado, o que está só especificado, questões abertas, histórico |
 
@@ -237,6 +241,7 @@ Taxa de chegada constante de 50 req/s por 60 s, limite `http_req_failed < 5%`. R
 | RNF-05: defasagem até 5 s | Marca implementada; meta proposta, não medida com instrumento `[NVI]` |
 | Métricas e traço distribuído (OpenTelemetry) | Especificado; implementado só log JSON e verificações de saúde |
 | Credencial de broker por serviço, TLS, autenticação na API | Especificado; ambiente local sem autenticação, declarado |
+| Integração contínua: build, testes, cobertura e mutação do domínio | Implementado: [GitHub Actions](.github/workflows/ci.yml), verde |
 | Integração com maquininha e banco | Especificado, fora do escopo |
 
 Detalhe e evidência de cada item em [docs/ESTADO.md](docs/ESTADO.md).
@@ -259,10 +264,7 @@ Cada item tem gatilho declarado; nenhum é necessário para os requisitos obriga
 | Estimativa de custo de infraestrutura e licenças em nuvem, com preços datados (todas as dependências atuais são open source) | Decisão de implantação em nuvem |
 | Observabilidade completa: traço OpenTelemetry do `POST` à projeção, métricas de outbox e de defasagem, painel | Entrega aceita para a próxima etapa |
 | Autenticação: OAuth2 client credentials na API, credencial de broker por serviço (Lancamentos só publica, Consolidado só consome), TLS | Mais de um comerciante real (QA-04) |
-| C4 nível 3 de componentes, desenhado a partir do código | Crescimento dos serviços além de um punhado de classes |
 | Migração versionada (DbUp) no lugar dos scripts de inicialização | Primeira mudança de esquema depois da entrega |
-| Integração contínua no GitHub Actions, com ações fixadas por SHA | Segundo contribuidor no repositório |
-| Teste de mutação no domínio, com limite no CI | CI configurado |
 | Saldo acumulado de fechamento, além do resultado do dia | Resposta da QA-01 indicando acumulado |
 | Batimento periódico do despachante, para o Consolidado distinguir "sem lançamentos" de "outbox parada" | Requisito de detectar defasagem com o broker fora |
 

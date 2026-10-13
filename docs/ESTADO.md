@@ -2,9 +2,9 @@
 
 **Documento vivo.** Atualizado ao fim de cada bloco de trabalho. Descreve o que existe, o que falta e o que está decidido, sem otimismo.
 
-**Última atualização:** 2026-10-12 (cartão 33, revisão final concluída)
+**Última atualização:** 2026-10-12 (cartões 40, 41 e 38 do backlog concluídos)
 **Build:** `dotnet build CaixaDiario.sln`: 0 avisos, 0 erros (`TreatWarningsAsErrors`, `AnalysisMode=Recommended`)
-**Testes:** 46 passando, 0 falhas (domínio 20, arquitetura 4, integração 22 com PostgreSQL e RabbitMQ reais via Testcontainers); carga k6 a 50 req/s com 0,00% de falha
+**Testes:** 51 passando, 0 falhas (domínio 25, arquitetura 4, integração 22 com PostgreSQL e RabbitMQ reais via Testcontainers); carga k6 a 50 req/s com 0,00% de falha. CI verde no GitHub Actions; cobertura de linha do domínio 96,36%; mutação do domínio 98,21% (Stryker.NET 5.0.0), ambos com limite de 85%
 
 ---
 
@@ -33,7 +33,7 @@ Conferidos contra o repositório publicado em 2026-10-12 21:37 (cartão 33): cad
 | O3 | Desenho da solução completo (Arquitetura Alvo) | Atendido | [04-arquitetura-alvo.md](https://github.com/eduardojnet/caixaDiario/blob/main/docs/04-arquitetura-alvo.md), [C2](https://github.com/eduardojnet/caixaDiario/blob/main/docs/diagrams/c2-conteineres.md), [contrato](https://github.com/eduardojnet/caixaDiario/blob/main/docs/contratos/lancamento-registrado.v1.md) |
 | O4 | Justificativa de ferramentas, tecnologias e tipo de arquitetura | Atendido | [ADR-0001](https://github.com/eduardojnet/caixaDiario/blob/main/docs/adr/ADR-0001-estilo-arquitetural.md), [ADR-0002](https://github.com/eduardojnet/caixaDiario/blob/main/docs/adr/ADR-0002-plataforma-armazenamento-e-integracao.md), aceitos no G2 |
 | O5 | Linguagem dominada | Atendido | C# / .NET 10: [src/](https://github.com/eduardojnet/caixaDiario/blob/main/src) |
-| O6 | Testes | Atendido | [tests/](https://github.com/eduardojnet/caixaDiario/blob/main/tests): 46 verdes, inclusive [RNF-01](https://github.com/eduardojnet/caixaDiario/blob/main/tests/CaixaDiario.Integracao.Tests/Rnf01IsolamentoTests.cs); carga k6 executada |
+| O6 | Testes | Atendido | [tests/](https://github.com/eduardojnet/caixaDiario/blob/main/tests): 51 verdes, CI verde, inclusive [RNF-01](https://github.com/eduardojnet/caixaDiario/blob/main/tests/CaixaDiario.Integracao.Tests/Rnf01IsolamentoTests.cs); carga k6 executada |
 | O7 | README: como funciona e como rodar localmente | Atendido | [README.md](https://github.com/eduardojnet/caixaDiario/blob/main/README.md), verificado por clone limpo |
 | O8 | Repositório público no GitHub | Atendido | https://github.com/eduardojnet/caixaDiario |
 | O9 | Toda documentação no repositório | Atendido | [docs/](https://github.com/eduardojnet/caixaDiario/blob/main/docs) e README |
@@ -63,6 +63,8 @@ Conferidos contra o repositório publicado em 2026-10-12 21:37 (cartão 33): cad
 - Esquemas: `db/lancamentos` (ledger append-only, chave única de idempotência, estorno único, outbox, papel com `SELECT`/`INSERT` e `UPDATE` só em `outbox.publicado_em`) e `db/consolidado` (`saldo_diario`, `lancamentos_aplicados`, `estado_projecao`).
 - `docker-compose.yml`: 2 APIs, 2 PostgreSQL 17, RabbitMQ 4.1.8; `lancamentos` depende só do próprio banco.
 - Testes: domínio, arquitetura (NetArchTest: Lancamentos não referencia Consolidado; sem assembly compartilhado), RNF-01 sem Consolidado e sem broker, idempotência sequencial e concorrente, estorno, imutabilidade por privilégio, projetor idempotente, reconciliação ponta a ponta, contrato nos dois lados.
+- C3 componentes (`docs/diagrams/c3-componentes.md`), desenhado a partir do código.
+- Integração contínua (`.github/workflows/ci.yml`): build sem avisos, testes, cobertura do domínio ≥ 85% e mutação do domínio ≥ 85%, ações fixadas por SHA.
 - RNF medidos: RNF-01 (teste e demonstração no compose), RNF-02 e RNF-03 (k6: 3001 req a 50/s, 0,00% de falha, p95 1,56 ms), RNF-04 (reconciliação), RNF-06 (privilégio), RNF-07 (idempotência).
 
 ## 5. Especificado, não implementado
@@ -98,7 +100,8 @@ Conferidos contra o repositório publicado em 2026-10-12 21:37 (cartão 33): cad
 | 4. Código e testes | 80 | 21:12 | 21:31 | 19 | Concluído | Compose sobe; POST 201; saldo confere; testes passam; POST 201 com Consolidado parado |
 | 5. README e fechamento | 40 | 21:32 | 21:35 | 3 | Concluído | Clone limpo sobe só com o README |
 | Reserva | 30 | 21:36 | 21:37 | 1 | Revisão final (cartão 33) | Consumida apenas pelo Bloco 4 ou por revisão final |
-| **Total** | **300** | | | **34** | | |
+| Backlog (38, 40, 41) | (reserva) | 21:48 | 21:52 | 4 | Concluído | Autorizado por Eduardo; gatilho de sobra de reserva cumprido |
+| **Total** | **300** | | | **38** | | |
 
 ---
 
@@ -151,3 +154,8 @@ Conferidos contra o repositório publicado em 2026-10-12 21:37 (cartão 33): cad
 | 2026-10-12 | Bloco 5: item extra em "O que faria com mais tempo" (batimento do despachante, L-05) registrado como cartão 43 no backlog |
 | 2026-10-12 | Tempos da §7 são relógio de parede desta sessão, do primeiro ao último comando de cada bloco; a revisão de Eduardo fora da sessão não está contada |
 | 2026-10-12 | 2026-10-12 21:37 cartão 33 concluído: O1 a O9 Atendido no ESTADO §2 com link publicado (todos 200); marca da avaliadora: 0 arquivos versionados e 0 mensagens de commit; §7 com tempos reais; espelho KANBAN atualizado |
+| 2026-10-12 | Backlog: Eduardo autorizou 40, 41 e 38; recusou abrir 34 a 37 (regra 15) e 39, 42, 43 (gatilho não cumprido) |
+| 2026-10-12 | Cartão 41: mutação inicial 83,93%, abaixo do limite; cinco testes de limite acrescentados (tamanhos, valor máximo, descrição ausente, tipo desconhecido) levaram a 98,21%. Limite mantido em 85% |
+| 2026-10-12 | 2026-10-12 21:53 cartão 40 concluído: .github/workflows/ci.yml verde no push f8cdee6 (run 38329130875), ações fixadas por SHA |
+| 2026-10-12 | 2026-10-12 21:53 cartão 41 concluído: Stryker.NET 5.0.0: 98,21% (55 mortos, 1 sobrevivente), limite 85% no CI; job verde no push 2482861 (run 38329246089) |
+| 2026-10-12 | 2026-10-12 21:53 cartão 38 concluído: docs/diagrams/c3-componentes.md com os dois serviços, desenhado a partir das classes de src/; mermaid-cli renderiza (rc=0) |

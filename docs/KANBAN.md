@@ -8,12 +8,12 @@ Espelho em texto do quadro mantido no TickTick (projeto `CaixaDiario`), que é a
 
 | Coluna | Cartões | Números |
 |---|---|---|
-| Backlog/Ideias | 10 | 34 a 43 |
+| Backlog/Ideias | 7 | 34 a 37, 39, 42, 43 |
 | A Fazer | 0 |  |
 | Em Andamento | 0 |  |
 | Em Revisão | 0 |  |
 | Bloqueado | 0 |  |
-| Concluído | 33 | 01 a 33 |
+| Concluído | 36 | 01 a 33, 38, 40, 41 |
 
 ## Faixas de numeração
 
@@ -76,15 +76,6 @@ GATILHO: entrega aceita para próxima etapa.
 ESCOPO: 1. OAuth2 client credentials na API; 2. credencial de broker por serviço (Lancamentos só publica, Consolidado só consome); 3. TLS no broker.  
 CRITÉRIO: teste que prova recusa sem token e recusa de publicação pelo Consolidado.
 
-### 38. Desenhar o C4 nível 3 de componentes
-
-**Bloco:** Backlog · **Prioridade:** baixa · **Etiquetas:** condicional, diagrama
-
-ÂNCORA: requisito O3, corte de profundidade da alternativa B.  
-POR QUE NÃO AGORA: níveis 1 e 2 atendem o requisito; nível 3 é profundidade.  
-GATILHO: reserva com 15 min ou mais livres após o cartão 33.  
-CRITÉRIO: docs/diagrams/c3-componentes.md desenhado a partir do código, não do desejo.
-
 ### 39. Adotar migração versionada com DbUp
 
 **Bloco:** Backlog · **Prioridade:** baixa · **Etiquetas:** condicional, persistencia
@@ -93,24 +84,6 @@ CRITÉRIO: docs/diagrams/c3-componentes.md desenhado a partir do código, não d
 POR QUE NÃO AGORA: custo de adaptação maior que o ganho em 5 h.  
 GATILHO: primeira mudança de esquema depois da entrega.  
 CRITÉRIO: migrador por serviço, subir duas vezes sobre o mesmo volume não reaplica nada.
-
-### 40. Configurar a integração contínua no GitHub Actions
-
-**Bloco:** Backlog · **Prioridade:** baixa · **Etiquetas:** condicional, teste, infra
-
-ÂNCORA: evidência contínua de build sem aviso e testes verdes; ci.yml do PacioliBank como base.  
-POR QUE NÃO AGORA: não é requisito; consome tempo do Bloco 4.  
-GATILHO: reserva com 15 min ou mais livres após o cartão 33.  
-CRITÉRIO: workflow verde no push, ações fixadas por SHA.
-
-### 41. Aplicar teste de mutação no domínio
-
-**Bloco:** Backlog · **Prioridade:** baixa · **Etiquetas:** condicional, teste
-
-ÂNCORA: força das asserções do domínio; Stryker já configurado no PacioliBank.  
-POR QUE NÃO AGORA: domínio deliberadamente fino neste desafio.  
-GATILHO: cartão 40 concluído.  
-CRITÉRIO: escore de mutação medido e registrado, com limite no CI.
 
 ### 42. Expor o saldo acumulado de fechamento
 
@@ -661,3 +634,33 @@ TETO: 5 min, mais a reserva de 30 min se disponível.
 - [x] 33.2 Buscar a marca da empresa avaliadora em todos os arquivos
 - [x] 33.3 Conferir ESTADO §7 com tempos reais
 - [x] 33.4 Atualizar o espelho docs/KANBAN.md
+
+### 38. Desenhar o C4 nível 3 de componentes
+
+**Bloco:** Backlog · **Prioridade:** baixa · **Etiquetas:** condicional, diagrama
+
+ÂNCORA: requisito O3, corte de profundidade da alternativa B.  
+POR QUE NÃO AGORA: níveis 1 e 2 atendem o requisito; nível 3 é profundidade.  
+GATILHO: reserva com 15 min ou mais livres após o cartão 33.  
+CRITÉRIO: docs/diagrams/c3-componentes.md desenhado a partir do código, não do desejo.
+ENTREGA (2026-10-12 21:53): docs/diagrams/c3-componentes.md com os dois serviços, desenhado a partir das classes de src/; mermaid-cli renderiza (rc=0).
+
+### 40. Configurar a integração contínua no GitHub Actions
+
+**Bloco:** Backlog · **Prioridade:** baixa · **Etiquetas:** condicional, teste, infra
+
+ÂNCORA: evidência contínua de build sem aviso e testes verdes; ci.yml do PacioliBank como base.  
+POR QUE NÃO AGORA: não é requisito; consome tempo do Bloco 4.  
+GATILHO: reserva com 15 min ou mais livres após o cartão 33.  
+CRITÉRIO: workflow verde no push, ações fixadas por SHA.
+ENTREGA (2026-10-12 21:53): .github/workflows/ci.yml verde no push f8cdee6 (run 38329130875), ações fixadas por SHA.
+
+### 41. Aplicar teste de mutação no domínio
+
+**Bloco:** Backlog · **Prioridade:** baixa · **Etiquetas:** condicional, teste
+
+ÂNCORA: força das asserções do domínio; Stryker já configurado no PacioliBank.  
+POR QUE NÃO AGORA: domínio deliberadamente fino neste desafio.  
+GATILHO: cartão 40 concluído.  
+CRITÉRIO: escore de mutação medido e registrado, com limite no CI.
+ENTREGA (2026-10-12 21:53): Stryker.NET 5.0.0: 98,21% (55 mortos, 1 sobrevivente), limite 85% no CI; job verde no push 2482861 (run 38329246089).
