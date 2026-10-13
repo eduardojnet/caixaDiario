@@ -1,0 +1,11 @@
+**/bin/
+**/obj/
+**/TestResults/
+.git/
+.vs/
+.vscode/
+.env
+docs/
+tests/
+CLAUDE.md
+.claude/

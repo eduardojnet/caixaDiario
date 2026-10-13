@@ -1,0 +1,98 @@
+# Ambiente local completo: duas APIs, dois bancos e o broker.
+#   docker compose up --build -d
+#
+# Regra 1 visivel aqui: o servico lancamentos depende so do proprio banco.
+# Nao ha depends_on para broker, consolidado nem consolidado-db.
+
+name: caixadiario
+
+services:
+
+  lancamentos-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: lancamentos
+      POSTGRES_USER: lancamentos_admin
+      POSTGRES_PASSWORD: ${LANCAMENTOS_DB_PASSWORD:-lancamentos_admin_local}
+      APP_DB_PASSWORD: ${LANCAMENTOS_APP_PASSWORD:-lancamentos_app_local}
+    volumes:
+      - ./db/lancamentos:/docker-entrypoint-initdb.d:ro
+      - lancamentos-dados:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lancamentos_admin -d lancamentos"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  lancamentos:
+    build:
+      context: .
+      dockerfile: src/CaixaDiario.Lancamentos.Api/Dockerfile
+    image: caixadiario/lancamentos:local
+    depends_on:
+      lancamentos-db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      # Papel da aplicacao: so SELECT e INSERT em lancamentos (RNF-06).
+      # GSS Encryption Mode=Disable: sem Kerberos no ambiente local; sem isso o
+      # Npgsql tenta carregar libgssapi, ausente na imagem, e polui o log.
+      ConnectionStrings__Lancamentos: "Host=lancamentos-db;Database=lancamentos;Username=lancamentos_app;Password=${LANCAMENTOS_APP_PASSWORD:-lancamentos_app_local};GSS Encryption Mode=Disable"
+      Broker__Host: broker
+      Broker__Usuario: ${BROKER_USER:-caixadiario}
+      Broker__Senha: ${BROKER_PASSWORD:-caixadiario_local}
+    ports:
+      - "8080:8080"
+
+  broker:
+    image: rabbitmq:4.1.8-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: ${BROKER_USER:-caixadiario}
+      RABBITMQ_DEFAULT_PASS: ${BROKER_PASSWORD:-caixadiario_local}
+    volumes:
+      - broker-dados:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    ports:
+      - "15672:15672"
+
+  consolidado-db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: consolidado
+      POSTGRES_USER: consolidado_admin
+      POSTGRES_PASSWORD: ${CONSOLIDADO_DB_PASSWORD:-consolidado_admin_local}
+      APP_DB_PASSWORD: ${CONSOLIDADO_APP_PASSWORD:-consolidado_app_local}
+    volumes:
+      - ./db/consolidado:/docker-entrypoint-initdb.d:ro
+      - consolidado-dados:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U consolidado_admin -d consolidado"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  consolidado:
+    build:
+      context: .
+      dockerfile: src/CaixaDiario.Consolidado.Api/Dockerfile
+    image: caixadiario/consolidado:local
+    depends_on:
+      consolidado-db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Consolidado: "Host=consolidado-db;Database=consolidado;Username=consolidado_app;Password=${CONSOLIDADO_APP_PASSWORD:-consolidado_app_local};GSS Encryption Mode=Disable"
+      Broker__Host: broker
+      Broker__Usuario: ${BROKER_USER:-caixadiario}
+      Broker__Senha: ${BROKER_PASSWORD:-caixadiario_local}
+    ports:
+      - "8081:8080"
+
+volumes:
+  lancamentos-dados:
+  consolidado-dados:
+  broker-dados:
