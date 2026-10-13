@@ -125,10 +125,10 @@ curl -s -H "Authorization: Bearer $TOKEN" localhost:8081/v1/caixas/loja-centro/c
 Resultado esperado:
 
 ```json
-{"caixaId":"loja-centro","data":"<hoje>","totalCreditos":150.75,"totalDebitos":50.25,"saldoDoDia":100.50,"quantidade":2,"atualizadoAte":"<instante>","defasado":false}
+{"caixaId":"loja-centro","data":"<hoje>","totalCreditos":150.75,"totalDebitos":50.25,"saldoDoDia":100.50,"saldoAcumulado":100.50,"quantidade":2,"atualizadoAte":"<instante>","defasado":false}
 ```
 
-Se `quantidade` vier menor que 2, repita depois de um segundo: a projeção é assíncrona.
+`saldoDoDia` é o resultado do dia; `saldoAcumulado` soma todos os dias do caixa até a data (iguais aqui, porque não há dias anteriores). Se `quantidade` vier menor que 2, repita depois de um segundo: a projeção é assíncrona. `defasado` vira `true` se o Consolidado deixar de receber o batimento de Lancamentos por mais de 15 s: experimente `docker compose stop lancamentos`, espere 20 s, consulte, e depois `docker compose start lancamentos`.
 
 **7. Ver a idempotência.** Repita exatamente o primeiro `POST` do passo 5, filtrando os cabeçalhos:
 
@@ -231,7 +231,7 @@ Depois de `down -v`, o passo 2 recria tudo, inclusive esquemas e certificados. P
 ## Testes
 
 ```bash
-dotnet test                 # 60 testes, sem erro e sem aviso
+dotnet test                 # 65 testes, sem erro e sem aviso
 ```
 
 Pré-requisitos: .NET SDK 10 e **Docker em execução**. Os testes de integração sobem PostgreSQL e RabbitMQ reais (Testcontainers) e preparam os bancos com os mesmos migradores que o compose usa.
@@ -240,7 +240,7 @@ Pré-requisitos: .NET SDK 10 e **Docker em execução**. Os testes de integraç�
 |---|---|---|
 | `CaixaDiario.Dominio.Tests` | 25 | Validação do lançamento: valor positivo com duas casas, limites de tamanho e de valor, tipo, data futura recusada, regra do estorno |
 | `CaixaDiario.Arquitetura.Tests` | 4 | NetArchTest: nenhum tipo de Lancamentos referencia Consolidado; sem assembly compartilhado; domínio sem infraestrutura |
-| `CaixaDiario.Integracao.Tests` | 31 | **RNF-01** (Lancamentos sem Consolidado e sem broker responde `201`, a outbox acumula, a métrica mostra o acúmulo, e a outbox esvazia quando o broker volta), traço único do `POST` à projeção, idempotência sequencial e com 10 envios simultâneos, estorno, imutabilidade por privilégio do banco, projetor idempotente, reconciliação ponta a ponta, contrato do evento nos dois lados, segurança (`401` sem token ou com token inválido, `403` sem escopo, usuário do Consolidado recusado ao publicar no broker), migração (segunda execução não reaplica; script novo aplicado sozinho) |
+| `CaixaDiario.Integracao.Tests` | 36 | **RNF-01** (Lancamentos sem Consolidado e sem broker responde `201`, a outbox acumula, a métrica mostra o acúmulo, e a outbox esvazia quando o broker volta), traço único do `POST` à projeção, idempotência sequencial e com 10 envios simultâneos, estorno, imutabilidade por privilégio do banco, projetor idempotente, reconciliação ponta a ponta, contrato do evento nos dois lados, segurança (`401` sem token ou com token inválido, `403` sem escopo, usuário do Consolidado recusado ao publicar no broker), migração (segunda execução não reaplica; script novo aplicado sozinho), saldo acumulado entre dias, batimento (sem ele, `defasado`) |
 
 **Por que banco real.** Idempotência sob envio simultâneo depende da chave única; imutabilidade depende de privilégio. Um repositório em memória passaria na implementação ingênua.
 
@@ -270,7 +270,7 @@ Taxa de chegada constante de 50 req/s por 60 s, limite `http_req_failed < 5%`. O
 | [06 Estimativa de Custos](docs/06-estimativa-de-custos.md) | Custo mensal em nuvem (AWS São Paulo, preços datados): ≈ US$ 196 na topologia recomendada, ≈ US$ 52 numa VM única; licenças sem custo |
 | [ADRs](docs/adr/README.md) | ADR-0001 estilo arquitetural; ADR-0002 plataforma, armazenamento e integração |
 | [Diagramas](docs/diagrams/README.md) | C1 contexto, C2 contêineres, C3 componentes, sequência de registro e projeção |
-| [Contrato do evento](docs/contratos/lancamento-registrado.v1.md) | `LancamentoRegistrado` v1, com exemplo JSON e regra de versão |
+| [Contratos](docs/contratos/lancamento-registrado.v1.md) | `LancamentoRegistrado` v1 e [`BatimentoDoDespachante` v1](docs/contratos/batimento-do-despachante.v1.md), com exemplo JSON e regra de versão |
 | [Estado do projeto](docs/ESTADO.md) | O que está implementado, o que está só especificado, questões abertas, histórico |
 
 ---
@@ -293,6 +293,8 @@ Taxa de chegada constante de 50 req/s por 60 s, limite `http_req_failed < 5%`. O
 | Arquitetura de transição a partir de legado | Especificado: [05](docs/05-arquitetura-de-transicao.md), sobre hipótese de legado declarada |
 | Estimativa de custo de infraestrutura e licenças | Especificado: [06](docs/06-estimativa-de-custos.md), preços da API pública da AWS em 2026-10-12 |
 | Migração versionada por serviço (DbUp) | Implementado ([ADR-0005](docs/adr/ADR-0005-migracao-versionada.md)); segunda subida sobre o mesmo volume não reaplica nada |
+| Saldo acumulado até a data | Implementado (cartão 42), com teste de reconciliação entre dias, inclusive retroativo |
+| Batimento do despachante: `defasado` quando Lancamentos ou a publicação param | Implementado (cartão 43), com teste ponta a ponta |
 | Integração com maquininha e banco | Especificado, fora do escopo |
 
 Detalhe e evidência de cada item em [docs/ESTADO.md](docs/ESTADO.md).
@@ -312,8 +314,12 @@ Cada item tem gatilho declarado; nenhum é necessário para os requisitos obriga
 | Evolução | Gatilho |
 |---|---|
 | Autorização por caixa (um comerciante não lê o caixa de outro), HTTPS no servidor de autorização e segredos em cofre | Mais de um comerciante real (QA-04) ou implantação fora do ambiente local |
-| Saldo acumulado de fechamento, além do resultado do dia | Resposta da QA-01 indicando acumulado |
-| Batimento periódico do despachante, para o Consolidado distinguir "sem lançamentos" de "outbox parada" | Requisito de detectar defasagem com o broker fora |
+| Meta e teste de carga do registro de lançamentos | Volume de escrita declarado pelo negócio (premissa PR-01) |
+| Limitador de taxa compartilhado entre réplicas do Consolidado (hoje é por instância, em memória) | Mais de uma réplica do Consolidado |
+| Saldo acumulado materializado, no lugar da soma na consulta | Latência da consulta acima da meta, medida com muitos dias por caixa |
+| Retenção, alertas e painéis versionados de telemetria (Jaeger, Prometheus e Grafana, ou serviço gerenciado) | Ambiente compartilhado ou de produção (ADR-0003) |
+| Alta disponibilidade multizona de bancos, broker e servidor de autorização | SLO de disponibilidade acima do que uma zona entrega (docs/06, opção C) |
+| Integração com maquininha e extrato bancário | Decisão de negócio de automatizar a entrada e a conciliação (C1) |
 
 ---
 

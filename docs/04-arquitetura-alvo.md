@@ -60,7 +60,7 @@ Nenhuma comunicação parte do Consolidado em direção a Lancamentos. Contrato 
 |---|---|---|
 | Lancamentos | `POST /v1/caixas/{caixaId}/lancamentos` | `Idempotency-Key` obrigatório. `201` novo; `200` com `Idempotency-Replayed: true` no reenvio idêntico; `422` mesma chave com corpo diferente; `400` dado inválido |
 | Lancamentos | `GET /v1/caixas/{caixaId}/lancamentos?data=AAAA-MM-DD` | Lista do dia, do próprio banco |
-| Consolidado | `GET /v1/caixas/{caixaId}/consolidado/{data}` | `totalCreditos`, `totalDebitos`, `saldoDoDia`, `quantidade`, `atualizadoAte`, `defasado`; `429` quando o limitador recusa |
+| Consolidado | `GET /v1/caixas/{caixaId}/consolidado/{data}` | `totalCreditos`, `totalDebitos`, `saldoDoDia`, `saldoAcumulado`, `quantidade`, `atualizadoAte`, `defasado`; `429` quando o limitador recusa |
 | Ambos | `GET /health/live`, `GET /health/ready` | `ready` de Lancamentos verifica só o próprio banco |
 
 Não há rota de alteração nem de exclusão de lançamento.
@@ -70,6 +70,7 @@ Não há rota de alteração nem de exclusão de lançamento.
 - **Um banco por serviço.** Nenhum serviço lê o banco do outro.
 - **Esquema versionado:** cada serviço tem um migrador (DbUp) que aplica os scripts de `db/<serviço>/` ainda não aplicados e termina antes de a API subir ([ADR-0005](adr/ADR-0005-migracao-versionada.md)). É o único processo com a credencial administrativa do banco.
 - **Lancamentos:** tabela `lancamentos` append-only, com chave única `(caixa_id, chave_idempotencia)`; tabela `outbox` gravada na mesma transação. O papel da aplicação tem só `SELECT` e `INSERT` em `lancamentos` (RNF-06); `UPDATE` apenas na coluna de publicação da `outbox`.
+- **Saldo acumulado:** soma dos resultados diários do caixa até a data, calculada na consulta. Um lançamento retroativo (QA-03) já aparece no acumulado dos dias seguintes, sem recalcular nada. O custo cresce com o número de dias por caixa (uma leitura por intervalo da chave primária); gatilho para materializar: latência da consulta acima da meta medida.
 - **Consolidado:** `lancamentos_aplicados` (chave primária `lancamento_id`) e `saldo_diario` (chave `caixa_id, data`). Ambos reconstruíveis reprocessando os eventos.
 - **Valor monetário:** `numeric(14,2)` no banco, `decimal` no código. Nunca ponto flutuante.
 
@@ -83,7 +84,7 @@ Como a consulta do saldo do dia é frequente em pico e muda pouco entre lançame
 
 1. **Cache em memória de curta duração** (poucos segundos) por `(caixaId, data)`: reduz leituras repetidas no banco. O custo é servir um saldo de instantes atrás; `atualizadoAte` torna isso visível.
 2. **Limitador de taxa com fila curta:** acima do limite configurado, a requisição excedente recebe `429` imediatamente, em vez de acumular e derrubar o serviço. Cada `429` conta como falha no orçamento de 5% (RNF-03); o limite é dimensionado acima de 50 req/s para que o orçamento não seja consumido em operação normal.
-3. **Marca de defasagem:** a resposta traz `defasado: true` quando o projetor não está conectado ao broker (não há como garantir que o saldo está em dia) ou quando há fila acumulada e o último evento aplicado chegou com atraso acima do limite do RNF-05. O Consolidado mede isso sozinho, pela própria fila, sem consultar Lancamentos. A consulta não falha por atraso; informa.
+3. **Marca de defasagem:** a resposta traz `defasado: true` quando o projetor não está conectado ao broker; quando o batimento que o despachante de Lancamentos publica a cada 5 s deixa de chegar por mais de 15 s (Lancamentos, seu banco ou o caminho até o broker parou); quando o batimento informa evento pendente na outbox mais velho que o limite do RNF-05; ou quando há fila acumulada aqui e o último evento aplicado chegou atrasado. O Consolidado decide sozinho, pelo que recebe, sem consultar Lancamentos ([contrato do batimento](contratos/batimento-do-despachante.v1.md)). A consulta não falha por atraso; informa.
 4. **Lancamentos não usa cache nem limitador** neste escopo: sua carga não foi declarada, e o registro precisa ser imediato.
 
 ### 4.7. Observabilidade

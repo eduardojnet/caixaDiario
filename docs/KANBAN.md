@@ -8,12 +8,12 @@ Espelho em texto do quadro mantido no TickTick (projeto `CaixaDiario`), que é a
 
 | Coluna | Cartões | Números |
 |---|---|---|
-| Backlog/Ideias | 2 | 42, 43 |
+| Backlog/Ideias | 0 |  |
 | A Fazer | 0 |  |
 | Em Andamento | 0 |  |
 | Em Revisão | 0 |  |
 | Bloqueado | 0 |  |
-| Concluído | 41 | 01 a 41 |
+| Concluído | 43 | 01 a 43 |
 
 ## Faixas de numeração
 
@@ -36,23 +36,6 @@ Espelho em texto do quadro mantido no TickTick (projeto `CaixaDiario`), que é a
 
 ## Backlog/Ideias
 
-### 42. Expor o saldo acumulado de fechamento
-
-**Bloco:** Backlog · **Prioridade:** baixa · **Etiquetas:** condicional, dominio
-
-ÂNCORA: QA-01 (saldo do dia ou acumulado).  
-POR QUE NÃO AGORA: conduta provisória expõe só o saldo do dia.  
-GATILHO: resposta da QA-01 indicando acumulado.  
-CRITÉRIO: campo saldoAcumulado no consolidado, com teste de reconciliação entre dias.
-
-### 43. Publicar batimento periódico do despachante
-
-**Bloco:** Backlog · **Prioridade:** baixa · **Etiquetas:** condicional, observabilidade
-
-ÂNCORA: lacuna L-05 (o Consolidado não distingue "sem lançamentos" de "outbox parada").  
-POR QUE NÃO AGORA: não muda o RNF-01; a marca `defasado` já cobre broker fora do lado do consumidor.  
-GATILHO: requisito de detectar defasagem com o broker fora.  
-CRITÉRIO: evento de batimento a cada N segundos; Consolidado marca `defasado` quando o batimento atrasa.
 
 ---
 
@@ -669,3 +652,23 @@ POR QUE NÃO AGORA: custo de adaptação maior que o ganho em 5 h.
 GATILHO: primeira mudança de esquema depois da entrega.  
 CRITÉRIO: migrador por serviço, subir duas vezes sobre o mesmo volume não reaplica nada.
 ENTREGA (2026-10-12 23:05): ADR-0005; CaixaDiario.Lancamentos.Migracoes e CaixaDiario.Consolidado.Migracoes (DbUp 7.0.1, diário versoes_do_esquema); compose: primeira subida aplicou 0001 e 0003 / 0001, segunda subida sobre o mesmo volume "Nenhum script novo" nos dois; MigracaoTests e fixture com o mesmo migrador; 60 testes verdes.
+
+### 42. Expor o saldo acumulado de fechamento
+
+**Bloco:** Backlog · **Prioridade:** baixa · **Etiquetas:** condicional, dominio
+
+ÂNCORA: QA-01 (saldo do dia ou acumulado).  
+POR QUE NÃO AGORA: conduta provisória expõe só o saldo do dia.  
+GATILHO: resposta da QA-01 indicando acumulado.  
+CRITÉRIO: campo saldoAcumulado no consolidado, com teste de reconciliação entre dias.
+ENTREGA (2026-10-12 23:18): saldoAcumulado no GET do consolidado, soma dos dias até a data na consulta; teste Saldo_acumulado_reconcilia_entre_dias_inclusive_com_retroativo verde; compose: 1000 ontem e -250,40 hoje → saldoAcumulado 749,60; QA-01 mantida aberta e QA-06 registrada.
+
+### 43. Publicar batimento periódico do despachante
+
+**Bloco:** Backlog · **Prioridade:** baixa · **Etiquetas:** condicional, observabilidade
+
+ÂNCORA: lacuna L-05 (o Consolidado não distingue "sem lançamentos" de "outbox parada").  
+POR QUE NÃO AGORA: não muda o RNF-01; a marca `defasado` já cobre broker fora do lado do consumidor.  
+GATILHO: requisito de detectar defasagem com o broker fora.  
+CRITÉRIO: evento de batimento a cada N segundos; Consolidado marca `defasado` quando o batimento atrasa.
+ENTREGA (2026-10-12 23:18): BatimentoDoDespachante v1 (contrato e exemplo) publicado a cada 5 s com o estado da outbox; Consolidado marca defasado sem batimento por 15 s ou com outbox atrasada na origem; testes de estado, de contrato e ponta a ponta verdes; compose: stop lancamentos → defasado true em 18 s, start → false; 65 testes verdes.

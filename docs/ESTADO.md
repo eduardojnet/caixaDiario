@@ -2,9 +2,9 @@
 
 **Documento vivo.** Atualizado ao fim de cada bloco de trabalho. Descreve o que existe, o que falta e o que está decidido, sem otimismo.
 
-**Última atualização:** 2026-10-12 (cartão 39 do backlog concluído)
+**Última atualização:** 2026-10-12 (cartões 42 e 43 concluídos; backlog vazio)
 **Build:** `dotnet build CaixaDiario.sln`: 0 avisos, 0 erros (`TreatWarningsAsErrors`, `AnalysisMode=Recommended`)
-**Testes:** 60 passando, 0 falhas (domínio 25, arquitetura 4, integração 31 com PostgreSQL e RabbitMQ reais via Testcontainers); carga k6 a 50 req/s com 0,00% de falha (com autenticação, p95 3,3 ms). CI verde no GitHub Actions; cobertura de linha do domínio 96,36%; mutação do domínio 98,21% (Stryker.NET 5.0.0), ambos com limite de 85%
+**Testes:** 65 passando, 0 falhas (domínio 25, arquitetura 4, integração 36 com PostgreSQL e RabbitMQ reais via Testcontainers); carga k6 a 50 req/s com 0,00% de falha (com autenticação, p95 3,3 ms). CI verde no GitHub Actions; cobertura de linha do domínio 96,36%; mutação do domínio 98,21% (Stryker.NET 5.0.0), ambos com limite de 85%
 
 ---
 
@@ -68,6 +68,7 @@ Conferidos contra o repositório publicado em 2026-10-12 21:37 (cartão 33): cad
 - Observabilidade (ADR-0003): OpenTelemetry nos dois serviços, traço único do `POST` à projeção via `outbox.traceparent` e cabeçalho AMQP, métricas de outbox e projetor, logs por OTLP, painel Aspire Dashboard em `:18888`.
 - Segurança de integração (ADR-0004): OAuth2 client credentials com Keycloak, escopo por operação; usuário de broker por serviço com privilégio mínimo; TLS obrigatório no broker (5671), certificados gerados no primeiro `up`.
 - Migração versionada (ADR-0005): um migrador DbUp por serviço, executado antes da API; segunda subida sobre o mesmo volume não reaplica nada; senha do papel da aplicação redefinida a cada execução.
+- Saldo acumulado até a data (cartão 42) e batimento do despachante (cartão 43), que fecha a lacuna L-05.
 - RNF medidos: RNF-01 (teste e demonstração no compose), RNF-02 e RNF-03 (k6: 3001 req a 50/s, 0,00% de falha, p95 1,56 ms), RNF-04 (reconciliação), RNF-06 (privilégio), RNF-07 (idempotência).
 
 ## 5. Especificado, não implementado
@@ -84,12 +85,12 @@ Conferidos contra o repositório publicado em 2026-10-12 21:37 (cartão 33): cad
 |---|---|---|---|
 | L-01 | Números do PacioliBank no texto de citação divergiam do repositório (95% e 87% declarados; 94,11% e 86,96% medidos) | Resolvida: reconferidos no README publicado no GitHub em 2026-10-12 (237 testes, 94,11%, 86,96%, estado de 2026-10-06). A cópia local do PacioliBank está atrás do remoto (230, 95,41%, 87,06%); vale o publicado, que é o que o avaliador abre | Verificação de 2026-10-12 |
 | L-02 | Plano original não tinha ADR de tecnologia (requisito O4) | ADR-0002 incluído no Bloco 2 | Verificação de 2026-10-12 |
-| QA-01 a QA-05 | Questões de negócio do enunciado | Condutas provisórias em `docs/03-requisitos.md` §7 | Bloco 1 |
+| QA-01 a QA-06 | Questões de negócio do enunciado | Condutas provisórias em `docs/03-requisitos.md` §7; QA-01 segue aberta mesmo com os dois saldos expostos; QA-06 (saldo de abertura) registrada no cartão 42 | Bloco 1 |
 | PR-01 a PR-04 | Premissas com impacto declarado | `docs/03-requisitos.md` §5 | Bloco 1 |
 | L-03 | Eventos publicados antes de existir a fila do Consolidado seriam descartados pela exchange fanout | Corrigido: publicação com `mandatory`; sem fila, o evento fica na outbox. Achado pelo teste de reconciliação | Bloco 4 |
 | L-04 | `defasado` baseado só no atraso do último evento ficaria verdadeiro para sempre depois de recuperar um acúmulo | Corrigido: estado do projetor (conexão e fila) entra no cálculo. Achado na demonstração do RNF-01 | Bloco 4 |
 | L-06 | Gatilho do cartão 39 (migração versionada) cumprido: `db/lancamentos/0003_rastreamento.sql` é a primeira mudança de esquema depois da entrega; só se aplica em volume novo (`docker compose down -v`) | Resolvida no cartão 39: migrador DbUp por serviço aplica scripts novos em volume existente (ADR-0005) | Cartão 36 |
-| L-05 | O Consolidado não enxerga a outbox de Lancamentos: com o broker fora, ele sabe que está desconectado, mas não quantos eventos esperam | Declarado; evolução: batimento periódico do despachante. Não muda o RNF-01 | Bloco 4 |
+| L-05 | O Consolidado não enxerga a outbox de Lancamentos: com o broker fora, ele sabe que está desconectado, mas não quantos eventos esperam | Resolvida no cartão 43: batimento do despachante com o estado da outbox; sem ele por 15 s, `defasado` | Bloco 4 |
 
 ---
 
@@ -177,3 +178,7 @@ Conferidos contra o repositório publicado em 2026-10-12 21:37 (cartão 33): cad
 | 2026-10-12 | Cartão 39: Eduardo autorizou explicitamente ("Siga para o 39"); gatilho já cumprido no cartão 36 |
 | 2026-10-12 | Cartão 39: scripts copiados para scripts/<serviço>/ na saída, para os dois migradores não se misturarem quando referenciados pelo mesmo projeto de teste; 0002_senha_aplicacao.sh removidos, a senha passa a ser aplicada pelo migrador |
 | 2026-10-12 | 2026-10-12 23:05 cartão 39 concluído: ADR-0005; CaixaDiario.Lancamentos.Migracoes e CaixaDiario.Consolidado.Migracoes (DbUp 7.0.1, diário versoes_do_esquema); compose: primeira subida aplicou 0001 e 0003 / 0001, segunda subida sobre o mesmo volume "Nenhum script novo" nos dois; MigracaoTests e fixture com o mesmo migrador; 60 testes verdes |
+| 2026-10-12 | Cartões 42 e 43: Eduardo autorizou explicitamente ("Siga para 42 e 43") com gatilhos não cumpridos; 42 implementado sem responder a QA-01 (os dois saldos expostos), 43 implementado sem requisito formal, como fechamento da L-05 |
+| 2026-10-12 | 2026-10-12 23:18 cartão 42 concluído: saldoAcumulado no GET do consolidado, soma dos dias até a data na consulta; teste Saldo_acumulado_reconcilia_entre_dias_inclusive_com_retroativo verde; compose: 1000 ontem e -250,40 hoje → saldoAcumulado 749,60; QA-01 mantida aberta e QA-06 registrada |
+| 2026-10-12 | 2026-10-12 23:18 cartão 43 concluído: BatimentoDoDespachante v1 (contrato e exemplo) publicado a cada 5 s com o estado da outbox; Consolidado marca defasado sem batimento por 15 s ou com outbox atrasada na origem; testes de estado, de contrato e ponta a ponta verdes; compose: stop lancamentos → defasado true em 18 s, start → false; 65 testes verdes |
+| 2026-10-12 | README: "O que faria com mais tempo" recomposta com as evoluções já registradas nos ADRs e na Arquitetura Alvo, cada uma com gatilho, depois de esvaziado o backlog |

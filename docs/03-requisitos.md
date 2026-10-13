@@ -26,7 +26,7 @@ Este documento separa **requisito** (o que a solução deve fazer ou garantir), 
 | RF-05 | Corrigir lançamento errado **somente por estorno**: novo lançamento de tipo oposto e mesmo valor, referenciando o original. Não existe alteração nem exclusão | Controle de Lançamentos | C1.4 |
 | RF-06 | Listar os lançamentos de um caixa em uma data do fato | Controle de Lançamentos | C2.1 |
 | RF-07 | Anunciar cada lançamento registrado em formato versionado, sem conhecer quem consome | Controle de Lançamentos | C2.2 (habilita) |
-| RF-08 | Consultar o consolidado de um caixa em uma data: total de créditos, total de débitos, saldo do dia e quantidade de lançamentos | Consolidado Diário | C2.2 |
+| RF-08 | Consultar o consolidado de um caixa em uma data: total de créditos, total de débitos, saldo do dia, saldo acumulado até a data e quantidade de lançamentos | Consolidado Diário | C2.2 |
 | RF-09 | Informar na consulta até quando o consolidado está atualizado e se está defasado | Consolidado Diário | C2.3 |
 | RF-10 | Aplicar cada lançamento anunciado ao consolidado uma única vez, mesmo com anúncio repetido | Consolidado Diário | C2.2 |
 
@@ -79,8 +79,9 @@ Cada questão é lacuna do enunciado. A conduta provisória é aplicada no desen
 
 | ID | Questão | Conduta provisória | O que muda se a resposta for outra |
 |---|---|---|---|
-| QA-01 | "Saldo diário consolidado" é o resultado do dia (entradas menos saídas do dia) ou o saldo acumulado de fechamento? | Expor `saldoDoDia`, o resultado do dia. Acumulado listado como evolução | Acrescentar `saldoAcumulado` ao consolidado, com projeção que soma o dia anterior e teste de reconciliação entre dias. O desenho não muda; muda o modelo de leitura |
+| QA-01 | "Saldo diário consolidado" é o resultado do dia (entradas menos saídas do dia) ou o saldo acumulado de fechamento? | Expor os dois: `saldoDoDia` e `saldoAcumulado` (cartão 42). A questão continua aberta quanto a qual dos dois o negócio chama de "saldo consolidado" em relatórios | Se for só um, o outro campo pode ser retirado na próxima versão do contrato da API; nenhuma mudança de desenho |
 | QA-02 | O caixa pode ficar negativo? | Permitido. É registro de fluxo de caixa, não conta com limite; recusar um débito real tornaria o registro falso | Validar saldo no registro exigiria que Lançamentos conhecesse o saldo, criando leitura de estado agregado no caminho crítico. Seria regra no domínio de Lançamentos, nunca consulta ao Consolidado |
 | QA-03 | Lançamento retroativo é permitido? | Sim, com data do fato até hoje; o consolidado do dia afetado é recalculado pela projeção. Data futura é recusada | Se proibido, validação adicional no domínio. Se data futura for permitida (agendamento), surge o conceito de lançamento previsto, que é outro domínio |
 | QA-04 | Um comerciante ou vários? | Vários caixas, identificados por `caixaId`. Sem autenticação no ambiente local, declarado | Com vários comerciantes reais, autenticação e autorização por caixa passam a ser obrigatórias (evolução listada na Arquitetura Alvo) |
 | QA-05 | Qual moeda? | Somente real (BRL), duas casas decimais | Multimoeda exige moeda no lançamento e consolidado por moeda; nunca soma entre moedas |
+| QA-06 | O caixa tem saldo de abertura (dinheiro já existente antes do primeiro lançamento)? | Não: o acumulado parte de zero. Saldo inicial entra como um crédito com a data de abertura | Se houver, campo de saldo de abertura por caixa, somado ao acumulado; sem mudança na projeção diária |
